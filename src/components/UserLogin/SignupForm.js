@@ -60,7 +60,7 @@ const SignupForm = () => {
         console.log('Sending payload: ', payload);
 
         try {
-            const response = await fetch('https://e849-2400-adc3-121-c100-8498-9e-27cb-eeeb.ngrok-free.app/api/v1/user/register-step1', {
+            const response = await fetch('https://9d34-2400-adc3-121-c100-d5d5-52ee-ea72-c27b.ngrok-free.app/api/v1/user/register-step1', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -97,7 +97,7 @@ const SignupForm = () => {
         console.log('Sending OTP payload:', payload);
 
         try {
-            const response = await fetch('https://e849-2400-adc3-121-c100-8498-9e-27cb-eeeb.ngrok-free.app/api/v1/user/finalizeInitialRegistration', {
+            const response = await fetch('https://9d34-2400-adc3-121-c100-d5d5-52ee-ea72-c27b.ngrok-free.app/api/v1/user/finalizeInitialRegistration', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -115,10 +115,12 @@ const SignupForm = () => {
                 console.log(localStorage.getItem("userObjectID"));
             } else {
                 message.error(`Error: ${result.error}. Kindly Start over`);
+                setIsOTPStep(false);
                 console.error('Error:', result.error);
             }
         } catch (error) {
             console.error('Fetch error:', error);
+            setIsOTPStep(false);
             message.error('Fetch error: ' + error.message);
         }
     };

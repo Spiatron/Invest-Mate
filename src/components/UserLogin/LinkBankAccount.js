@@ -1,20 +1,71 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Typography, Col, Radio, Select } from 'antd';
+import { Form, Input, Button, Typography, Col, Radio, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 
 const { Title, Text, Link } = Typography;
-const { Option } = Select;
 
 const LinkBankAccount = () => {
     const navigate = useNavigate();
-    const [step, setStep] = useState(1); // Track which step to show (1: initial, 2: UPI, 3: Manual)
+    const [step, setStep] = useState(1);
     const [accountNumber, setAccountNumber] = useState('');
     const [confirmAccountNumber, setConfirmAccountNumber] = useState('');
 
-    const onFinish = () => {
-        console.log('Form submitted');
-        navigate('/UploadDocumentsForm');
-        // Handle form submission or transition to the next step
+    const isValidAccountNumber = (value) => /^\d{9,18}$/.test(value); // 9 to 18 digits
+    const isValidIFSC = (value) => /^[A-Za-z]{4}\d{7}$/.test(value); // 4 letters followed by 7 digits
+    const isValidMICR = (value) => /^\d{9}$/.test(value); // 9 digits
+
+    const onFinish = async (values) => {
+        const { ifsc, micr, accountNumber } = values;
+
+        // Validate account details (will not stop form submission)
+        const errors = {};
+        if (!isValidAccountNumber(accountNumber)) {
+            errors.accountNumber = 'Invalid bank account number';
+        }
+        if (!isValidIFSC(ifsc)) {
+            errors.ifsc = 'Invalid IFSC code';
+        }
+        if (!isValidMICR(micr)) {
+            errors.micr = 'Invalid MICR code';
+        }
+
+        // If there are errors, display them and stop submission
+        if (Object.keys(errors).length > 0) {
+            message.error('Please fix the errors in the form.');
+            return;
+        }
+
+        const bankDetails = {
+            accountNumber,
+            micrCode: micr,
+            ifsc: ifsc,
+        };
+
+        const userObjectID = localStorage.getItem('userObjectID'); // Assume userObjectID is stored in localStorage
+
+        const jsonBody = { bankDetails, userObjectID };
+
+        console.log('JSON Body:', jsonBody); // Log the JSON body for debugging
+
+        try {
+            const response = await fetch('https://9d34-2400-adc3-121-c100-d5d5-52ee-ea72-c27b.ngrok-free.app/api/v1/user/insertBankDetails', { // Replace with your API endpoint
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(jsonBody),
+            });
+            const result = await response.json();
+            console.log('Response:', result);
+            if (response.ok) {
+                message.success(result.message);
+                navigate('/UploadDocumentsForm');
+            } else {
+                message.error('Failed to submit bank details. Please try again.');
+            }
+        } catch (error) {
+            message.error('An error occurred while submitting bank details. Please try again.');
+        }
     };
 
     // Inline styles
@@ -41,17 +92,10 @@ const LinkBankAccount = () => {
         <div style={containerStyle}>
             <Col xs={24} sm={18} md={12} lg={8}>
                 <div style={formBoxStyle}>
-                    {/* Step Title */}
                     <Title level={4}>Step 5 of 7</Title>
-
-                    {/* Main Title */}
                     <Title level={3}>Link bank account</Title>
+                    <Text>Bank account in your name from which you will transact funds for trading.</Text>
 
-                    <Text>
-                        Bank account in your name from which you will transact funds for trading.
-                    </Text>
-
-                    {/* Initial screen with two options */}
                     {step === 1 && (
                         <Form layout="vertical" style={{ marginTop: '20px' }}>
                             <Form.Item>
@@ -67,12 +111,10 @@ const LinkBankAccount = () => {
                                     </Radio>
                                 </Radio.Group>
                             </Form.Item>
-
-                            {/* Submit Button */}
                             <Form.Item>
-                                <Button 
-                                    type="primary" 
-                                    htmlType="submit" 
+                                <Button
+                                    type="primary"
+                                    htmlType="submit"
                                     style={{ width: '100%' }}
                                     disabled={step === 1}
                                 >
@@ -82,32 +124,22 @@ const LinkBankAccount = () => {
                         </Form>
                     )}
 
-                    {/* Display "Link with UPI" screen */}
                     {step === 2 && (
                         <Form name="linkWithUPI" onFinish={onFinish} layout="vertical" style={{ marginTop: '20px' }}>
                             <Text strong>Link with UPI</Text>
                             <Text type="secondary" style={{ display: 'block', marginBottom: '15px' }}>
                                 ₹1 will be debited from your account and refunded within 7 working days.
                             </Text>
-
-                            {/* Placeholder buttons for UPI apps */}
-                            <Button block style={{ marginBottom: '10px' }}>Google Pay</Button>
-                            <Button block style={{ marginBottom: '10px' }}>PhonePe</Button>
-                            <Button block style={{ marginBottom: '10px' }}>Paytm</Button>
                             <Button block style={{ marginBottom: '10px' }}>UPI</Button>
-
-                            {/* Link manually option */}
                             <Text>
-                                <Link onClick={() => setStep(3)} style={{color:"#ff0000"}}>
+                                <Link onClick={() => setStep(3)} style={{ color: "#ff0000" }}>
                                     Link manually →
                                 </Link>
                             </Text>
-
-                            {/* Submit Button */}
                             <Form.Item>
-                                <Button 
-                                    type="primary" 
-                                    htmlType="submit" 
+                                <Button
+                                    type="primary"
+                                    htmlType="submit"
                                     style={{ width: '100%', marginTop: '15px' }}
                                 >
                                     Continue
@@ -116,13 +148,15 @@ const LinkBankAccount = () => {
                         </Form>
                     )}
 
-                    {/* Display "Enter bank details manually" screen */}
                     {step === 3 && (
                         <Form name="enterBankDetails" onFinish={onFinish} layout="vertical" style={{ marginTop: '20px' }}>
                             <Form.Item
                                 label="Branch's IFSC"
                                 name="ifsc"
-                                rules={[{ required: true, message: 'Please enter your branch IFSC code' }]}
+                                rules={[
+                                    { required: true, message: 'Please enter your branch IFSC code' },
+                                    { validator: (_, value) => isValidIFSC(value) ? Promise.resolve() : Promise.reject('Invalid IFSC code') }
+                                ]}
                             >
                                 <Input placeholder="Branch's IFSC" />
                             </Form.Item>
@@ -130,20 +164,26 @@ const LinkBankAccount = () => {
                             <Form.Item
                                 label="Branch MICR code"
                                 name="micr"
-                                rules={[{ required: true, message: 'Please select the branch MICR code' }]}
+                                rules={[
+                                    { required: true, message: 'Please enter the branch MICR code' },
+                                    { validator: (_, value) => isValidMICR(value) ? Promise.resolve() : Promise.reject('Invalid MICR code') }
+                                ]}
                             >
-                                 <Input placeholder="Branch MICR code" />
+                                <Input placeholder="Branch MICR code" />
                             </Form.Item>
 
                             <Form.Item
                                 label="Bank account number"
                                 name="accountNumber"
-                                rules={[{ required: true, message: 'Please enter your bank account number' }]}
+                                rules={[
+                                    { required: true, message: 'Please enter your bank account number' },
+                                    { validator: (_, value) => isValidAccountNumber(value) ? Promise.resolve() : Promise.reject('Invalid bank account number') }
+                                ]}
                             >
-                                <Input 
-                                    placeholder="Bank account number" 
-                                    value={accountNumber} 
-                                    onChange={(e) => setAccountNumber(e.target.value)} 
+                                <Input
+                                    placeholder="Bank account number"
+                                    value={accountNumber}
+                                    onChange={(e) => setAccountNumber(e.target.value)}
                                 />
                             </Form.Item>
 
@@ -162,25 +202,23 @@ const LinkBankAccount = () => {
                                     }),
                                 ]}
                             >
-                                <Input 
-                                    placeholder="Confirm bank account number" 
-                                    value={confirmAccountNumber} 
-                                    onChange={(e) => setConfirmAccountNumber(e.target.value)} 
+                                <Input
+                                    placeholder="Confirm bank account number"
+                                    value={confirmAccountNumber}
+                                    onChange={(e) => setConfirmAccountNumber(e.target.value)}
                                 />
                             </Form.Item>
 
-                            {/* Link with UPI option */}
                             <Text>
-                                <Link style={{color:"#ff0000"}} onClick={() => setStep(2)}>
+                                <Link style={{ color: "#ff0000" }} onClick={() => setStep(2)}>
                                     Link with UPI →
                                 </Link>
                             </Text>
 
-                            {/* Submit Button */}
                             <Form.Item>
-                                <Button 
-                                    type="primary" 
-                                    htmlType="submit" 
+                                <Button
+                                    type="primary"
+                                    htmlType="submit"
                                     style={{ width: '100%', marginTop: '15px' }}
                                     disabled={isContinueDisabled}
                                 >

@@ -11,6 +11,7 @@ const Layout = ({ children }) => {
   // Check if the current path should hide the Navbar
   const shouldHideNavbar =
     location.pathname === '/login' || 
+    location.pathname === '/forgetpassword' || 
     location.pathname === '/LastStep' ||
     location.pathname === '/UploadDocumentsForm' ||
     location.pathname === '/LinkBankAccount' ||

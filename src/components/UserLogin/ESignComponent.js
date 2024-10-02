@@ -34,30 +34,35 @@ const ESignComponent = ({ isVisible, onClose, onComplete }) => { // Add onComple
 
     const handleSubmit = async () => {
         if (checked && (aadhaar.length === 12)) {
-            const formData = new FormData();
-            formData.append('aadhaar', aadhaar); // Append Aadhaar number
-            formData.append('userObjectID', localStorage.getItem("userObjectID")); // Append userObjectID from localStorage
-    
-            console.log('Form Data for Aadhaar:');
-            formData.forEach((value, key) => {
-                console.log(key + ':', value); // Log each key-value pair in FormData
-            });
+            
+           // Create a plain object to hold the data
+           const jsonData = {
+            adhaar: aadhaar, // Aadhaar number
+            userObjectID: localStorage.getItem("userObjectID") // userObjectID from localStorage
+        };
+
+        console.log('JSON Data for Aadhaar:', jsonData);
+     
     
             try {
-                const response = await fetch('https://e849-2400-adc3-121-c100-8498-9e-27cb-eeeb.ngrok-free.app/api/v1/user/healthCheck', {
+                const response = await fetch('https://9d34-2400-adc3-121-c100-d5d5-52ee-ea72-c27b.ngrok-free.app/api/v1/user/verifyAdhaarNumber', {
                     method: 'POST',
-                    body: formData,
+                    headers: {
+                        'Content-Type': 'application/json' // Set the content type to application/json
+                    },
+                    body: JSON.stringify(jsonData), // Convert the object to a JSON string
                 });
-    
+                const result = await response.json();
+                console.log('API response:', result);
+
                 if (response.ok) {
-                    const result = await response.json();
-                    console.log('Response:', result);
-                    message.success('Aadhaar submitted successfully!');
+                    console.log('Response:', result.message);
+                    message.success(result.message);
                     onComplete();
                     onClose();
                 } else {
-                    console.error('Error:', response.statusText);
-                    message.error('Failed to submit Aadhaar. Please try again.');
+                    console.error('Error:', result.error);
+                    message.error(result.error);
                 }
             } catch (error) {
                 console.error('Error:', error);

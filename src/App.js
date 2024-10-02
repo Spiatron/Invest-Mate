@@ -15,8 +15,10 @@ import UploadDocumentsForm from './components/UserLogin/UploadDocumentsForm';
 import LastStep from './components/UserLogin/LastStep';
 import AdminPanel from './components/Admin/AdminPanel';
 import LoginForm from './components/UserLogin/LoginForm';
-import ProfileSettings from './components/UserLogin/ProfileSettings';
+import ProfileSettings from './components/ProfileSettings/ProfileSettings';
 import { EmailProvider } from './components/UserLogin/EmailContext'
+import ForgetPassword from './components/UserLogin/ForgetPassword';
+import CustomerPanel from './components/Admin/CustomerPanel';
 
 function App() {
   return (
@@ -44,6 +46,8 @@ function App() {
             <Route path="/admin" element={<AdminPanel />} />
             <Route path="/login" element={<LoginForm />} />
             <Route path="/Profile-Settings" element={<ProfileSettings />} />
+            <Route path="/forgetpassword" element={<ForgetPassword />} />
+            <Route path="/CustomerPanel" element={<CustomerPanel />} />
             {/* Add other routes as necessary */}
           </Routes>
         </Layout>
