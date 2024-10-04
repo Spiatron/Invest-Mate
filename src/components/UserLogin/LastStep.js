@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Button, Typography, Col, Modal } from 'antd';
+import { Button, Typography, Col, Modal, Avatar } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import ESignComponent from './ESignComponent'; // Import the new component
 import moment from 'moment'; // To handle date and time
-import { CheckCircleOutlined } from '@ant-design/icons'; // Import Ant Design icon
+import { CheckCircleOutlined, UserOutlined } from '@ant-design/icons'; // Import Ant Design icon
+import { useUsername } from './UsernameContext'; // Adjust the path as necessary
 
 const { Title, Text, Link } = Typography;
 
@@ -12,6 +13,7 @@ const LastStep = () => {
     const [isESignVisible, setIsESignVisible] = useState(false);
     const [showCongratulatoryMessage, setShowCongratulatoryMessage] = useState(false);
     const [isESignCompleted, setIsESignCompleted] = useState(false); // State to track eSign completion
+    const { username } = useUsername();
 
     const handleESign = () => {
         const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ss');
@@ -55,7 +57,7 @@ const LastStep = () => {
         boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
         width: '100%',
         maxWidth: '400px',
-        textAlign: 'center',
+        // textAlign: 'center',
     };
 
     const buttonStyle = {
@@ -73,6 +75,23 @@ const LastStep = () => {
         <div style={containerStyle}>
             <Col xs={24} sm={18} md={12} lg={8}>
                 <div style={formBoxStyle}>
+                    {/* Username Card */}
+                    <div
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            backgroundColor: "#f0f0f0",
+                            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                            padding: '10px',
+                            height: '30px',
+                            margin: '5px',
+                        }}
+                    >
+                        <Avatar icon={<UserOutlined />} style={{ marginRight: '20px' }} />
+                        <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
+                            {username ? username : 'Current User'}
+                        </span>
+                    </div>
                     {/* Step Title */}
                     <Title level={4}>Step 7 of 7</Title>
 
@@ -87,11 +106,11 @@ const LastStep = () => {
                     </Button>
 
                     {/* Finish Button - enabled only if eSign is complete */}
-                    <Button 
-                        type="default" 
-                        danger 
-                        style={buttonStyle} 
-                        onClick={handleFinish} 
+                    <Button
+                        type="default"
+                        danger
+                        style={buttonStyle}
+                        onClick={handleFinish}
                         disabled={!isESignCompleted} // Disable if eSign not completed
                     >
                         Finish

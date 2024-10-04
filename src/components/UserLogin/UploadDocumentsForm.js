@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Form, Button, Upload, Typography, Col, message } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import { Form, Button, Upload, Typography, Col, message, Avatar } from 'antd';
+import { UploadOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useUsername } from './UsernameContext'; // Adjust the path as necessary
 
 const { Title, Text } = Typography;
 
@@ -11,6 +12,7 @@ const UploadDocumentsForm = () => {
     const [isIncomeProofUploaded, setIsIncomeProofUploaded] = useState(false);
     const [isSignatureUploaded, setIsSignatureUploaded] = useState(false);
     const navigate = useNavigate();
+    const { username } = useUsername();
 
     const handleIncomeProofUpload = async ({ fileList }) => {
         if (fileList.length > 0) {
@@ -115,6 +117,23 @@ const UploadDocumentsForm = () => {
         <div style={containerStyle}>
             <Col xs={24} sm={18} md={12} lg={8}>
                 <div style={formBoxStyle}>
+                    {/* Username Card */}
+                    <div
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            backgroundColor: "#f0f0f0",
+                            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                            padding: '10px',
+                            height: '30px',
+                            margin: '5px',
+                        }}
+                    >
+                        <Avatar icon={<UserOutlined />} style={{ marginRight: '20px' }} />
+                        <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
+                            {username ? username : 'Current User'}
+                        </span>
+                    </div>
                     <Title level={4}>Step 6 of 7</Title>
                     <Form name="uploadDocuments" onFinish={onFinish} layout="vertical">
                         <Form.Item
@@ -130,7 +149,7 @@ const UploadDocumentsForm = () => {
                                 beforeUpload={() => false}
                                 maxCount={1}
                             >
-                                <Button icon={<UploadOutlined/>} loading={loading} disabled={loading}>
+                                <Button icon={<UploadOutlined />} loading={loading} disabled={loading}>
                                     Click to Upload
                                 </Button>
                             </Upload>

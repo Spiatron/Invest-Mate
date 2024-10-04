@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Typography, Col, Radio, message } from 'antd';
+import { Form, Input, Button, Typography, Col, Radio, message, Avatar } from 'antd';
+import { UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { useUsername } from './UsernameContext'; // Adjust the path as necessary
 
 const { Title, Text, Link } = Typography;
 
@@ -9,6 +11,7 @@ const LinkBankAccount = () => {
     const [step, setStep] = useState(1);
     const [accountNumber, setAccountNumber] = useState('');
     const [confirmAccountNumber, setConfirmAccountNumber] = useState('');
+    const { username } = useUsername();
 
     const isValidAccountNumber = (value) => /^\d{9,18}$/.test(value); // 9 to 18 digits
     const isValidIFSC = (value) => /^[A-Za-z]{4}\d{7}$/.test(value); // 4 letters followed by 7 digits
@@ -92,6 +95,23 @@ const LinkBankAccount = () => {
         <div style={containerStyle}>
             <Col xs={24} sm={18} md={12} lg={8}>
                 <div style={formBoxStyle}>
+                    {/* Username Card */}
+                    <div
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            backgroundColor: "#f0f0f0",
+                            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                            padding: '10px',
+                            height: '30px',
+                            margin: '5px',
+                        }}
+                    >
+                        <Avatar icon={<UserOutlined />} style={{ marginRight: '20px' }} />
+                        <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
+                            {username ? username : 'Current User'}
+                        </span>
+                    </div>
                     <Title level={4}>Step 5 of 7</Title>
                     <Title level={3}>Link bank account</Title>
                     <Text>Bank account in your name from which you will transact funds for trading.</Text>

@@ -16,14 +16,14 @@ import LastStep from './components/UserLogin/LastStep';
 import AdminPanel from './components/Admin/AdminPanel';
 import LoginForm from './components/UserLogin/LoginForm';
 import ProfileSettings from './components/ProfileSettings/ProfileSettings';
-import { EmailProvider } from './components/UserLogin/EmailContext'
+import { UsernameProvider } from './components/UserLogin/UsernameContext'
 import ForgetPassword from './components/UserLogin/ForgetPassword';
 import CustomerPanel from './components/Admin/CustomerPanel';
 
 function App() {
   return (
     <Router>
-      <EmailProvider>
+      <UsernameProvider>
       <ConfigProvider
         theme={{
           token: {
@@ -53,7 +53,7 @@ function App() {
         </Layout>
         <AppFooter />
       </ConfigProvider>
-      </EmailProvider>
+      </UsernameProvider>
     </Router>
   );
 }

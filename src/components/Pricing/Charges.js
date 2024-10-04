@@ -120,10 +120,10 @@ const Charges = () => {
                         AMC (Account maintenance charges)
                     </Title>
                     <Paragraph style={{ textAlign: 'start' }}>
-                        For BSDA demat account: Zero charges if the holding value is less than ₹4,00,000. To learn more about BSDA, <Link to="/Pricing" style={{ color: "#ff0000" }}>Click here</Link>
+                        For BSDA demat account: Zero charges if the holding value is less than ₹4,00,000. To learn more about BSDA,
                     </Paragraph>
                     <Paragraph style={{ textAlign: 'start' }}>
-                        For non-BSDA demat accounts: ₹300/year + 18% GST charged quarterly (90 days). To learn more about AMC, <Link to="/Pricing" style={{ color: "#ff0000" }}>Click here</Link>
+                        For non-BSDA demat accounts: ₹300/year + 18% GST charged quarterly (90 days). To learn more about AMC,
                     </Paragraph>
 
                     <Title level={4} style={{ textAlign: 'start' }}>
@@ -158,7 +158,7 @@ const Charges = () => {
                         Delayed Payment Charges
                     </Title>
                     <Paragraph style={{ textAlign: 'start' }}>
-                        Interest is levied at 18% a year or 0.05% per day on the debit balance in your trading account. <Link to="/Pricing" style={{ color: "#ff0000" }}>Learn more.</Link>
+                        Interest is levied at 18% a year or 0.05% per day on the debit balance in your trading account.
                     </Paragraph>
                 </Col>
                 {/* Disclaimer section at the bottom */}

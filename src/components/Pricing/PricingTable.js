@@ -187,10 +187,6 @@ const PricingTable = () => {
                 </TabPane>
 
             </Tabs>
-            {/* Add the "Calculate your costs upfront" text here */}
-            <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '24px', fontWeight: '500' }}>
-                Calculate your costs upfront using our <a href="/brokerage-calculator" style={{ color: "#ff0000" }}>brokerage calculator</a>.
-            </div>
         </div>
     );
 };

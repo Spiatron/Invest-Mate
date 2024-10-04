@@ -15,7 +15,7 @@ const ChargesTable = () => {
             key: 'charges',
             width: '20%', // Smaller width for "Charges"
             render: (text) => (
-                <Tag color={text === 'FREE' ? 'green' : 'geekblue'}>
+                <Tag color={text === 'FREE' ? 'red' : 'volcano'}>
                     {text}
                 </Tag>
             ),

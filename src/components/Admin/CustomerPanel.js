@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Button, Modal, Form, Input, Select, Pagination, Typography, Descriptions } from 'antd';
+import { Table, Button, Modal, Form, Input, Select, Pagination, Typography, Descriptions, Row, Col } from 'antd';
 
 const { Option } = Select;
 const { Title } = Typography;
@@ -28,6 +28,8 @@ const CustomerPanel = () => {
     const [viewingUser, setViewingUser] = useState(null); // For details modal
     const [currentPage, setCurrentPage] = useState(1);
     const [searchText, setSearchText] = useState('');
+    const [approvalFilter, setApprovalFilter] = useState(''); // State for Approval filter
+    const [statusFilter, setStatusFilter] = useState(''); // State for Status filter
 
     const pageSize = 10;
 
@@ -93,7 +95,7 @@ const CustomerPanel = () => {
             align: 'center',
             render: (approval) => {
                 const approvalStyles = {
-                    Pending: { color: '#ffba08' }, //yellow
+                    Pending: { color: '#ffc917' }, //yellow
                     Approved: { color: '#38b000' }, //green
                     Rejected: { color: '#ff0000' }, //red
                 };
@@ -115,12 +117,14 @@ const CustomerPanel = () => {
         },
     ];
 
-    // Filter data based on search input
-    const filteredData = data.filter(user =>
-        user.name.toLowerCase().includes(searchText.toLowerCase()) ||
+    // Filter data based on search input and filters
+    const filteredData = data.filter(user => 
+        (user.name.toLowerCase().includes(searchText.toLowerCase()) ||
         user.email.toLowerCase().includes(searchText.toLowerCase()) ||
         user.aadhaar.toLowerCase().includes(searchText.toLowerCase()) ||
-        user.pan.toLowerCase().includes(searchText.toLowerCase())
+        user.pan.toLowerCase().includes(searchText.toLowerCase())) &&
+        (approvalFilter ? user.approval === approvalFilter : true) &&
+        (statusFilter ? user.status === statusFilter : true)
     );
 
     // Pagination change handler
@@ -132,12 +136,41 @@ const CustomerPanel = () => {
         <div style={containerStyle}>
             <Title level={2} style={titleStyle}>Admin Customer Management</Title>
 
-                <Input
-                    placeholder="Search by Name, Email, Aadhaar or PAN"
-                    onChange={(e) => setSearchText(e.target.value)}
-                    style={searchInputStyle}
-                />
+            {/* Search and Filters */}
+            <Row gutter={16}>
+                <Col>
+                    <Input
+                        placeholder="Search by Name, Email, Aadhaar or PAN"
+                        onChange={(e) => setSearchText(e.target.value)}
+                        style={searchInputStyle}
+                    />
+                </Col>
+                <Col>
+                    <Select
+                        placeholder="Filter by Approval"
+                        onChange={(value) => setApprovalFilter(value)}
+                        style={{ width: 200 }}
+                        allowClear
+                    >
+                        <Option value="Approved">Approved</Option>
+                        <Option value="Rejected">Rejected</Option>
+                        <Option value="Pending">Pending</Option>
+                    </Select>
+                </Col>
+                <Col>
+                    <Select
+                        placeholder="Filter by Status"
+                        onChange={(value) => setStatusFilter(value)}
+                        style={{ width: 200 }}
+                        allowClear
+                    >
+                        <Option value="Active">Active</Option>
+                        <Option value="Frozen">Frozen</Option>
+                    </Select>
+                </Col>
+            </Row>
 
+            {/* Table and Pagination */}
             <Table
                 columns={columns}
                 dataSource={filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize)}
@@ -242,9 +275,7 @@ const titleStyle = {
 
 const searchInputStyle = {
     marginBottom: '10px',
-    width: '500px',
-    marginLeft: 'auto',
-    display: 'block',
+    width: '300px',
 };
 
 const tableStyle = {

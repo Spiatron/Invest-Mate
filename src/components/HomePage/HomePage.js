@@ -23,7 +23,7 @@ const HomePage = () => {
             
             {/* Main Heading */}
             <h1 style={{ fontSize: '48px', fontWeight: 'bold', margin: '0 0 20px 0', lineHeight: '1.2' }}>
-              Start trading online with leverage up to 1:2000
+            Elevate Your Trading: Harness Powerful Leverage!
             </h1>
 
             {/* Subtext */}

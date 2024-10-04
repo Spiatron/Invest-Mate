@@ -1,12 +1,12 @@
 // Layout.js
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { useEmail } from '../UserLogin/EmailContext'; 
+import { useUsername } from './UsernameContext'; 
 import Navbar from '../Navbar/Navbar';
 
 const Layout = ({ children }) => {
   const location = useLocation();
-  const { email } = useEmail(); // Access the email from context
+  const { username } = useUsername(); // Access the username from context
 
   // Check if the current path should hide the Navbar
   const shouldHideNavbar =
@@ -20,8 +20,8 @@ const Layout = ({ children }) => {
     location.pathname === '/segment-selection' ||
     location.pathname === '/SignupForm';
 
-  // console.log('Current Path:', location.pathname);
-  // console.log('Email:', email); 
+  console.log('Current Path:', location.pathname);
+  console.log('username:', username); 
 
   return (
     <>

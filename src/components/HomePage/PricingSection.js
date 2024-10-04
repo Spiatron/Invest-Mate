@@ -12,7 +12,7 @@ const PricingSection = () => {
 
   const highlightStyle = {
     fontSize: '2.5rem',
-    color: '#f3b000',
+    color: '#ff0000',
     fontWeight: 'bold',
   };
 

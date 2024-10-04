@@ -1,5 +1,7 @@
 import React from 'react';
-import { Button, Row, Col } from 'antd';
+import { Button, Row, Col, Typography } from 'antd';
+
+const { Title, Text, Link } = Typography;
 
 const InvestSection = () => {
   return (
@@ -15,6 +17,7 @@ const InvestSection = () => {
       </p>
 
       {/* Sign-up Button */}
+      <Link href="/SignupForm">
       <Button 
         type="primary" 
         size="large"
@@ -22,6 +25,7 @@ const InvestSection = () => {
       >
         Sign up for free
       </Button>
+      </Link>
     </div>
   );
 };

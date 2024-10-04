@@ -1,10 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Form, Input, Button, Select, Col, Row, Typography, message } from 'antd';
 import { UserOutlined, PhoneOutlined, MailOutlined, LockOutlined } from '@ant-design/icons';
 import { Country, State, City } from 'country-state-city';
 import PANStepForm from './PANStepForm';
-import { useEmail } from './EmailContext'; // Adjust the path as necessary
-
+import { useUsername } from './UsernameContext';
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -16,12 +15,10 @@ const SignupForm = () => {
     const [states, setStates] = useState([]);
     const [cities, setCities] = useState([]);
     const [selectedCountry, setSelectedCountry] = useState('IN');
-    const [otpString, setOtpString] = useState(''); // Single state to manage the OTP string
-    // const otpInputs = useRef([]);
+    const [otpString, setOtpString] = useState('');
+    const [email, setEmail] = useState(''); // Local email state
 
-    // const [email, setEmail] = useState(''); // New state to store email
-
-    const { email, setEmail } = useEmail(); // Move the useEmail hook to the top level
+    const { setUsername } = useUsername(); // Destructure setUsername from useUsername hook
 
     useEffect(() => {
         setStates(State.getStatesOfCountry(selectedCountry));
@@ -46,7 +43,7 @@ const SignupForm = () => {
 
         const payload = {
             username: values.username,
-            email: values.email,  // Save the email to be used in OTP step
+            email: values.email, // Use the email from form values
             mobileNumber: fullPhoneNumber,
             address: {
                 country: selectedCountry,
@@ -72,11 +69,11 @@ const SignupForm = () => {
             console.log('API response:', result);
 
             if (response.ok) {
-                setEmail(values.email); // Store email in state for later OTP submission
+                setEmail(values.email); // Store the email in local state
                 message.success('OTP sent successfully! Check your email for the OTP.');
                 setIsOTPStep(true);
+                setUsername(values.username);
             } else {
-                // Handle errors
                 console.error('Error:', result.error);
                 message.error(result.error || 'An unknown error occurred');
             }
@@ -86,14 +83,11 @@ const SignupForm = () => {
         }
     };
 
-
     const handleOTPSubmit = async () => {
         const payload = {
-            // email,
-            email,
+            email, // Use the locally stored email
             otp: otpString,
         };
-        console.log(setEmail);
         console.log('Sending OTP payload:', payload);
 
         try {
@@ -111,7 +105,7 @@ const SignupForm = () => {
             if (response.ok) {
                 message.success('OTP verified successfully! Proceeding to the next step.');
                 setIsPANStep(true);
-                localStorage.setItem("userObjectID", result.user.userObjectID)
+                localStorage.setItem("userObjectID", result.user.userObjectID);
                 console.log(localStorage.getItem("userObjectID"));
             } else {
                 message.error(`Error: ${result.error}. Kindly Start over`);
@@ -127,13 +121,10 @@ const SignupForm = () => {
 
     const handleOTPChange = (e) => {
         const value = e.target.value;
-
-        // Limit the length to 6 characters
         if (value.length <= 6) {
-            setOtpString(value); // Update the OTP string directly
+            setOtpString(value); // Update OTP string
         }
     };
-
 
     // Inline styles
     const containerStyle = {
@@ -153,6 +144,7 @@ const SignupForm = () => {
         width: '100%',
         maxWidth: '500px',
     };
+
     return (
         <>
             {isPANStep ? (
@@ -322,9 +314,9 @@ const SignupForm = () => {
                                             ]}
                                         >
                                             <Input
-                                                value={otpString} // Use the OTP string for the input value
+                                                value={otpString}
                                                 onChange={handleOTPChange}
-                                                maxLength={6} // Limit input length to 6
+                                                maxLength={6}
                                                 placeholder="Enter 6-digit OTP"
                                                 style={{ width: '100%' }}
                                             />
