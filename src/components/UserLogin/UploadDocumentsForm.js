@@ -33,7 +33,7 @@ const UploadDocumentsForm = () => {
 
         try {
             setLoading(true);
-            const response = await axios.post('https://f61e-2400-adc3-121-c100-8498-9e-27cb-eeeb.ngrok-free.app/api/v1/user/updateIncomeProof', formData, {
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/user/updateIncomeProof`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -62,7 +62,7 @@ const UploadDocumentsForm = () => {
 
         try {
             setLoading(true);
-            const response = await axios.post('https://f61e-2400-adc3-121-c100-8498-9e-27cb-eeeb.ngrok-free.app/api/v1/user/updateUserSignaturePic', formData, {
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/user/updateUserSignaturePic`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },

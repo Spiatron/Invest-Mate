@@ -32,7 +32,7 @@ const ForgetPassword = () => {
         console.log('Sending OTP request with body:', jsonBody); // Log the JSON body for OTP request
 
         try {
-            const response = await fetch('https://9d34-2400-adc3-121-c100-d5d5-52ee-ea72-c27b.ngrok-free.app/api/v1/user/forgetPasswordStep1', {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/user/forgetPasswordStep1`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(jsonBody),
@@ -62,7 +62,7 @@ const ForgetPassword = () => {
         console.log('Resetting password with body:', jsonBody); // Log the JSON body for password reset request
 
         try {
-            const response = await fetch('https://9d34-2400-adc3-121-c100-d5d5-52ee-ea72-c27b.ngrok-free.app/api/v1/user/forgetPasswordStep2', {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/user/forgetPasswordStep2`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(jsonBody),

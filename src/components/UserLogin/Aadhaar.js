@@ -14,6 +14,7 @@ const Aadhaar = () => {
     const [fileList, setFileList] = useState([]);
     const [captchaValid, setCaptchaValid] = useState(false);
     const [aadhaarError, setAadhaarError] = useState('');
+    const [profilePicList, setProfilePicList] = useState([]); // Profile picture file list
 
     const handleAadhaarChange = (e) => {
         let input = e.target.value.replace(/\D/g, ''); // Remove non-digit characters
@@ -44,17 +45,18 @@ const Aadhaar = () => {
         formData.append('adhaar', aadhaarNumber.replace(/\s/g, '')); // Remove spaces from Aadhaar number
         formData.append('userObjectID', localStorage.getItem("userObjectID")); // Get userObjectID from localStorage
 
-        // Append the uploaded file
+        // Append the uploaded file of Aadhaar
         if (fileList.length > 0) {
             formData.append('adhaar-pic', fileList[0].originFileObj); // Add the file to FormData
         }
+
         console.log('Form Data:');
         formData.forEach((value, key) => {
             console.log(key + ':', value);
         });
         try {
             const response = await axios.post(
-                'https://9d34-2400-adc3-121-c100-d5d5-52ee-ea72-c27b.ngrok-free.app/api/v1/user/updateAdhaar',
+                `${process.env.REACT_APP_API_URL}/api/v1/user/updateAdhaar`,
                 formData,
                 {
                     headers: {
@@ -79,10 +81,52 @@ const Aadhaar = () => {
             console.error('Error updating Aadhaar card details:', error);
           }
     };
-
     const handleUpload = ({ fileList }) => {
         setFileList(fileList);
     };
+
+    const handleUploadPic = async ({ fileList }) => {
+        if (fileList.length > 0) {
+            await UploadProfilePic(fileList[0]);
+            setProfilePicList(fileList); // Update the profile picture file list state
+        }
+    }; 
+
+    const UploadProfilePic = async (file) => {
+        const formDataPic = new FormData();
+        formDataPic.append('profile-pic', file.originFileObj); // Add the Profile Picture to FormData
+        formDataPic.append('userObjectID', localStorage.getItem("userObjectID"));
+    
+        // Logging FormData entries to the console
+        for (let [key, value] of formDataPic.entries()) {
+          console.log(`${key}: ${value instanceof File ? value.name : value}`);
+        }
+        try {
+            const response = await axios.post(
+                `${process.env.REACT_APP_API_URL}/api/v1/user/upload-profile-picture`,
+                formDataPic,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                }
+            );
+            if (response.data && response.data.message) {
+                message.success(response.data.message); // Use API response success message
+              } else {
+                message.success('Profile Picture updaloaded successfully!'); // Fallback success message
+              }
+              console.log('API response:', response);
+        } catch (error) {
+            // Check if the error has a response and display the specific error message
+            if (error.response && error.response.data && error.response.data.error) {
+              message.error(`${error.response.data.error}`);
+            } else {
+              message.error('Failed to updaload Profile Picture.');
+            }
+            console.error('Error updating Profile Picture:', error);
+          }
+    }
 
     const onReCAPTCHAChange = (value) => {
         if (value) {
@@ -156,7 +200,24 @@ const Aadhaar = () => {
                             >
                                 <Button icon={<UploadOutlined />}>Click to Upload</Button>
                             </Upload>
-                        </Form.Item>
+                            </Form.Item>
+
+                            <Form.Item
+                            name="ProfilePic" // Updated name to match your field
+                            label="Upload Profile Picture (PDF or Image)"
+                            valuePropName="fileList"
+                            getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)} // Handle fileList correctly
+                        >
+                            <Upload
+                                name="profile-pic" // Specify the name for the file input
+                                listType="picture" // Change the list type to picture if you want to display thumbnails
+                                onChange={handleUploadPic} // Function to handle the upload state
+                                beforeUpload={() => false} // Prevent automatic upload
+                                maxCount={1} // Limit the number of files to 1
+                            >
+                                <Button icon={<UploadOutlined />}>Click to Upload</Button>
+                            </Upload>
+                            </Form.Item>
 
 
                         {/* reCAPTCHA */}
@@ -178,7 +239,7 @@ const Aadhaar = () => {
                         </Form.Item>
 
                         <Form.Item>
-                            <Button type="primary" htmlType="submit" style={{ width: '100%', marginTop: "10px" }} disabled={aadhaarError !== '' || !captchaValid}>
+                            <Button type="primary" htmlType="submit" style={{ width: '100%', marginTop: "10px" }}  disabled={aadhaarError !== '' || !captchaValid || profilePicList.length === 0}>
                                 Next
                             </Button>
                         </Form.Item>

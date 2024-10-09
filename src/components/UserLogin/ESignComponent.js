@@ -45,7 +45,7 @@ const ESignComponent = ({ isVisible, onClose, onComplete }) => { // Add onComple
      
     
             try {
-                const response = await fetch('https://9d34-2400-adc3-121-c100-d5d5-52ee-ea72-c27b.ngrok-free.app/api/v1/user/verifyAdhaarNumber', {
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/user/verifyAdhaarNumber`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json' // Set the content type to application/json

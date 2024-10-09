@@ -1,28 +1,61 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Drawer, Button, Avatar, Dropdown } from 'antd';
+import { Layout, Menu, Drawer, Button, Avatar, Dropdown, message } from 'antd';
 import { MenuOutlined, UserOutlined, SettingOutlined, UsergroupAddOutlined } from '@ant-design/icons';
 import { RiAdminLine } from "react-icons/ri";
 import { FaIndianRupeeSign } from "react-icons/fa6";
-import { Link } from 'react-router-dom';
-import Logo from './logo'; 
+import { Link,useNavigate } from 'react-router-dom';  // Added useHistory
+import Logo from './logo';
 
 const { Header } = Layout;
 
 const Navbar = () => {
   const [visible, setVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const navigate = useNavigate();
 
   const items = [
     { key: '1', label: <Link to="/login">Account</Link> },
-    { key: '2', label: <Link to="/pricing">Pricing</Link> },
-    { key: '3', label: <Link to="/support">Support-Contact Us</Link> },
-    { key: '4', label: <Link to="/about">About</Link> },
+    { key: '2', label: <Link to="/Buy&Sell">Buy & sell</Link> },
+    { key: '3', label: <Link to="/pricing">Pricing</Link> },
+    { key: '4', label: <Link to="/support">Support-Contact Us</Link> },
+    { key: '5', label: <Link to="/about">About</Link> },
+    { key: '6', label: <Link to="/graph">Graph</Link> },
   ];
+
+  // Function to handle logout
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        message.error("Token not found");
+        console.error("Token not found");
+        return;
+      }
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/user/logout`, {
+        method: 'GET',
+        headers:{"token": token}
+      });
+      const data = await response.json(); // Parse the response body
+      if (response.ok) {
+        localStorage.clear();  // Clear the local storage on successful logout
+        message.success('Logged out successfully');
+        navigate("/login");  // Redirect to the loginPage
+       console.log(response)
+      } else {
+        message.error(data.error);
+        console.error(data.error);
+      }
+    } 
+    catch (error) {
+      message.error('An error occurred while logging out.');
+      console.error('Logout error:', error);
+    }
+  };
 
   const userMenu = (
     <Menu>
-      <Menu.Item key="1" icon={<UserOutlined/>}>
-        <span>User Name</span>
+      <Menu.Item key="1" icon={<UserOutlined />}>
+        <span>{localStorage.getItem("username")}</span>
       </Menu.Item>
       <Menu.Item key="2" icon={<RiAdminLine />}>
         <Link to="/admin">Admin Panel</Link>
@@ -35,6 +68,9 @@ const Navbar = () => {
       </Menu.Item>
       <Menu.Item key="5" icon={<SettingOutlined />}>
         <Link to="/Profile-Settings">Profile Settings</Link>
+      </Menu.Item>
+      <Menu.Item key="6" icon={<SettingOutlined />} onClick={handleLogout}>
+        Logout
       </Menu.Item>
     </Menu>
   );
@@ -79,16 +115,14 @@ const Navbar = () => {
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
         }}
       >
-        {/* Logo Section */}
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Link to="/"> {/* Link to the homepage */}
+          <Link to="/">
             <Logo />
           </Link>
         </div>
-        
-        {/* Desktop Menu */}
+
         {!isMobile ? (
-          <div style={{ flexGrow: 1, textAlign: 'right', marginRight: '20px' }}> {/* Added margin-right for spacing */}
+          <div style={{ flexGrow: 1, textAlign: 'right', marginRight: '20px' }}>
             <Menu
               theme="light"
               mode="horizontal"
@@ -99,7 +133,7 @@ const Navbar = () => {
                 backgroundColor: 'transparent',
                 borderBottom: 'none',
                 display: 'flex',
-                lineHeight: '64px', // Align menu items vertically in the center
+                lineHeight: '64px',
               }}
             />
           </div>
@@ -112,7 +146,6 @@ const Navbar = () => {
           />
         )}
 
-        {/* User Avatar Dropdown */}
         <Dropdown overlay={userMenu} trigger={['click']} placement="bottomRight">
           <Avatar
             size="large"
@@ -121,12 +154,7 @@ const Navbar = () => {
           />
         </Dropdown>
 
-        <Drawer
-          title="Menu"
-          placement="right"
-          onClose={closeDrawer}
-          visible={visible}
-        >
+        <Drawer title="Menu" placement="right" onClose={closeDrawer} visible={visible}>
           <Menu mode="vertical" items={items} />
         </Drawer>
       </Header>

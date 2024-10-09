@@ -1,6 +1,5 @@
 import React from 'react';
 import { Row, Col, Typography } from 'antd';
-import { TrophyOutlined, CustomerServiceOutlined, SafetyOutlined, DollarCircleOutlined } from '@ant-design/icons';
 
 const { Title, Paragraph } = Typography;
 
@@ -37,33 +36,16 @@ const TrustWithConfidence = () => {
 
         </Col>
 
-        {/* Right Column: Icons Section */}
-        {/* <Col xs={24} md={12}>
-          <Row gutter={[16, 16]} justify="center" align="middle">
-            
-         
-            <Col span={12} style={{ textAlign: 'center' }}>
-              <TrophyOutlined style={{ fontSize: '40px', color: '#1890ff' }} />
-              <Paragraph>Streak</Paragraph>
-            </Col>
-            <Col span={12} style={{ textAlign: 'center' }}>
-              <SafetyOutlined style={{ fontSize: '40px', color: '#1890ff' }} />
-              <Paragraph>Console</Paragraph>
-            </Col>
-            <Col span={12} style={{ textAlign: 'center' }}>
-              <CustomerServiceOutlined style={{ fontSize: '40px', color: '#1890ff' }} />
-              <Paragraph>Kite</Paragraph>
-            </Col>
-            <Col span={12} style={{ textAlign: 'center' }}>
-              <DollarCircleOutlined style={{ fontSize: '40px', color: '#1890ff' }} />
-              <Paragraph>Coin</Paragraph>
-            </Col>
-
-          </Row>
-        </Col> */}
+        {/* Right Column: Image Section */}
+        <Col xs={24} md={12} style={{ textAlign: 'center' }}>
+          <img
+            src="\HomePage\pic2.webp"
+            alt="Trust with confidence"
+            style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px' }}
+          />
+        </Col>
 
       </Row>
-
     </div>
   );
 };

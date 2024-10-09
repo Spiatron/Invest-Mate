@@ -19,6 +19,8 @@ import ProfileSettings from './components/ProfileSettings/ProfileSettings';
 import { UsernameProvider } from './components/UserLogin/UsernameContext'
 import ForgetPassword from './components/UserLogin/ForgetPassword';
 import CustomerPanel from './components/Admin/CustomerPanel';
+import BuyAndSell from './components/BuyAndSell/BuyAndSell';
+import Graph from './components/Graph'
 
 function App() {
   return (
@@ -48,6 +50,9 @@ function App() {
             <Route path="/Profile-Settings" element={<ProfileSettings />} />
             <Route path="/forgetpassword" element={<ForgetPassword />} />
             <Route path="/CustomerPanel" element={<CustomerPanel />} />
+            <Route path="/Buy&Sell" element={<BuyAndSell />} />
+            <Route path="/graph" element={<Graph />} />
+            <Route path="/webSocket" element={<webSocket />} />
             {/* Add other routes as necessary */}
           </Routes>
         </Layout>

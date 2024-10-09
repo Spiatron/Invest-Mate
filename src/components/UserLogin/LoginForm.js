@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Form, Input, Button, Typography, message } from 'antd';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
 
 const { Title, Text } = Typography;
 
@@ -33,13 +34,13 @@ const LoginForm = () => {
         const { userID, password } = values;
 
         // Create the JSON body for step 1
-        const loginBody = { userZID: userID, password: password  };
+        const loginBody = { userZID: userID, password: password };
 
         // Log the JSON body
         console.log('Step 1 JSON Body:', loginBody);
 
         try {
-            const response = await fetch('https://9d34-2400-adc3-121-c100-d5d5-52ee-ea72-c27b.ngrok-free.app/api/v1/user/login/step1', {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/user/login/step1`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(loginBody),
@@ -49,11 +50,14 @@ const LoginForm = () => {
             if (response.ok) {
                 setIsOTPSent(true);  // Proceed to OTP step
                 message.success(result.message);
+                console.log(result.message)
             } else {
                 message.error(result.error);
+                console.error(result.error)
             }
         } catch (error) {
             message.error("Failed to login. Please try again later.");
+            console.error(error)
         }
     };
 
@@ -68,26 +72,43 @@ const LoginForm = () => {
         console.log('Step 2 JSON Body:', otpBody);
 
         try {
-            const response = await fetch('https://9d34-2400-adc3-121-c100-d5d5-52ee-ea72-c27b.ngrok-free.app/api/v1/user/login/step2', {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/user/login/step2`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(otpBody),
             });
             const result = await response.json();
-            console.log('Response:', result);
+            console.log('Response:', result.token);
+            console.log(response.ok);
             if (response.ok) {
-                message.success(result.message);
+                message.success("Welcome! You've logged in successfully.");
+                console.log(result.message);
+                const { token, userData } = result;
                 navigate("/");  // Redirect to the homepage
-            } 
+            if (token) {
+                    localStorage.setItem("token", token);
+                    localStorage.setItem("username", userData.username);
+                    localStorage.setItem("User-Role", userData.userRole);
+                    localStorage.setItem("UserID", userData.userObjectID);
+                    localStorage.setItem("UserZID", userData.userZID);
+                    localStorage.setItem("ProfilePic", userData.profilePic);
+                    console.log(result);
+                } else{
+                    message.error("Login failed. Token is missing.");
+                    console.error("Login failed. Token is missing.");
+                }
+            }
             else {
-                message.error("Invalid OTP. Please try again.");
+                message.error(result.error);
+                console.log(result.error)
                 setIsOTPSent(false);  // Go back to login step 1
-                form.resetFields();  // Clear form fields
+                // form.resetFields();  // Clear form fields
             }
         } catch (error) {
-            message.error("Failed to submit OTP. Please try again later.");
+            message.error("Failed to submit OTP. Please try again.");
+            console.log(error)
             setIsOTPSent(false);  // Go back to login step 1
-            form.resetFields();  // Clear form fields 
+            //  form.resetFields();  // Clear form fields 
         }
     };
 

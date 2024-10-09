@@ -57,7 +57,7 @@ const SignupForm = () => {
         console.log('Sending payload: ', payload);
 
         try {
-            const response = await fetch('https://9d34-2400-adc3-121-c100-d5d5-52ee-ea72-c27b.ngrok-free.app/api/v1/user/register-step1', {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/user/register-step1`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -91,7 +91,7 @@ const SignupForm = () => {
         console.log('Sending OTP payload:', payload);
 
         try {
-            const response = await fetch('https://9d34-2400-adc3-121-c100-d5d5-52ee-ea72-c27b.ngrok-free.app/api/v1/user/finalizeInitialRegistration', {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/user/finalizeInitialRegistration`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

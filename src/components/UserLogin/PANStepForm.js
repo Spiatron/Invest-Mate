@@ -79,7 +79,7 @@ const PANStepForm = () => {
 
     try {
       const response = await axios.post(
-        'https://9d34-2400-adc3-121-c100-d5d5-52ee-ea72-c27b.ngrok-free.app/api/v1/user/updatePanCard',
+        `${process.env.REACT_APP_API_URL}/api/v1/user/updatePanCard`,
         formData,
         {
           headers: {

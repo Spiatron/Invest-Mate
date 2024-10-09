@@ -51,7 +51,7 @@ const LinkBankAccount = () => {
         console.log('JSON Body:', jsonBody); // Log the JSON body for debugging
 
         try {
-            const response = await fetch('https://9d34-2400-adc3-121-c100-d5d5-52ee-ea72-c27b.ngrok-free.app/api/v1/user/insertBankDetails', { // Replace with your API endpoint
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/user/insertBankDetails`, { // Replace with your API endpoint
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
