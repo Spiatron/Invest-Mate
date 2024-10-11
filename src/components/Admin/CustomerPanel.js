@@ -1,37 +1,68 @@
-import React, { useState } from 'react';
-import { Table, Button, Modal, Form, Input, Select, Pagination, Typography, Descriptions, Row, Col } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Table, Button, Modal, Form, Input, Select, Pagination, Typography, Descriptions, Row, Col, message } from 'antd';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 
 const { Option } = Select;
 const { Title } = Typography;
+const { confirm: antdConfirm } = Modal; // Rename 'confirm' to 'antdConfirm' to avoid conflicts
 
 const CustomerPanel = () => {
-    const [data, setData] = useState([...Array(50).keys()].map((i) => ({
-        key: i,
-        name: `User ${i + 1}`,
-        email: `user${i + 1}@example.com`,
-        pan: `PAN${i + 1}`,
-        aadhaar: `AADHAAR${i + 1}`,
-        dob: '1990-01-01',
-        phone: `123456789${i}`,
-        country: 'India',
-        state: 'State Name',
-        city: 'City Name',
-        bankAccount: `1234567890${i}`,
-        branchMicr: `MICR${i}`,
-        branchIfsc: `IFSC${i}`,
-        status: i % 2 === 0 ? 'Active' : 'Frozen',
-        approval: 'Pending', // Default approval status
-    })));
+    const [data, setData] = useState([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [detailsModalVisible, setDetailsModalVisible] = useState(false); // For details modal
+    const [detailsModalVisible, setDetailsModalVisible] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
-    const [viewingUser, setViewingUser] = useState(null); // For details modal
+    const [viewingUser, setViewingUser] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [searchText, setSearchText] = useState('');
-    const [approvalFilter, setApprovalFilter] = useState(''); // State for Approval filter
-    const [statusFilter, setStatusFilter] = useState(''); // State for Status filter
+    const [approvalFilter, setApprovalFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
+    const [kycDisabled, setKycDisabled] = useState(false); // KYC DropDown disabler after one
 
     const pageSize = 10;
+
+    // Fetch users from the API with filters applied
+    const fetchUsers = async () => {
+        try {
+            let url = '';
+    
+            // Determine which API to hit based on the filters
+            if (approvalFilter) {
+                // If 'kycStatus' filter is applied, use the 'getUsersByKYC' endpoint
+                url = `${process.env.REACT_APP_API_URL}/api/v1/admin/getUsersByKYC?kycStatus=${approvalFilter}`;
+            } else if (statusFilter) {
+                // If 'status' filter is applied, use the 'getUsersByStatus' endpoint
+                url = `${process.env.REACT_APP_API_URL}/api/v1/admin/getUsersByStatus?status=${statusFilter}`;
+            } else {
+                // If no filters are applied, default to fetching pending users from 'getUsersByKYC'
+                url = `${process.env.REACT_APP_API_URL}/api/v1/admin/getUsersByKYC`;
+            }
+    
+            // If there is search text, append it to the URL
+            if (searchText) {
+                const searchParam = `search=${encodeURIComponent(searchText)}`;
+                url += url.includes('?') ? `&${searchParam}` : `?${searchParam}`;
+            }
+    
+            console.log('Fetching URL:', url); // Debugging to check the constructed URL
+    
+            const response = await fetch(url, { method: 'GET' });
+            const users = await response.json();
+    
+            console.log('Fetched users:', users);
+            setData(users);  // Update the state with the fetched users
+    
+        } catch (error) {
+            console.error('Error fetching users:', error);
+        }
+    };
+    
+    
+
+    // Fetch users whenever filters or search text change
+    useEffect(() => {
+        fetchUsers();
+    }, [approvalFilter, statusFilter, searchText]);
+
 
     // Show Modal for Edit
     const showModal = (user) => {
@@ -45,24 +76,18 @@ const CustomerPanel = () => {
         setDetailsModalVisible(true);
     };
 
-    // Handle Save User
-    const handleSaveUser = (values) => {
-        setData(data.map((user) => user.key === editingUser.key ? { ...user, ...values } : user));
-        setIsModalVisible(false);
-    };
-
     // Handle Delete User
-    const handleDeleteUser = (key) => {
-        setData(data.filter(user => user.key !== key));
+    const handleDeleteUser = (id) => {
+        setData(data.filter(user => user._id !== id));
     };
 
     // Table Columns
     const columns = [
         {
-            title: 'Name',
+            title: 'Username',
             align: 'center',
-            dataIndex: 'name',
-            key: 'name',
+            dataIndex: 'username',
+            key: 'username',
         },
         {
             title: 'Email',
@@ -90,17 +115,16 @@ const CustomerPanel = () => {
         },
         {
             title: 'Approval',
-            dataIndex: 'approval',
-            key: 'approval',
+            dataIndex: 'kycStatus',
+            key: 'kycStatus',
             align: 'center',
-            render: (approval) => {
+            render: (kycStatus) => {
                 const approvalStyles = {
-                    Pending: { color: '#ffc917' }, //yellow
-                    Approved: { color: '#38b000' }, //green
-                    Rejected: { color: '#ff0000' }, //red
+                    pending: { color: '#ffc917' }, // yellow
+                    approved: { color: '#38b000' }, // green
+                    rejected: { color: '#ff0000' }, // red
                 };
-
-                return <span style={approvalStyles[approval]}>{approval}</span>;
+                return <span style={approvalStyles[kycStatus.toLowerCase()]}>{kycStatus}</span>;
             },
         },
         {
@@ -110,26 +134,75 @@ const CustomerPanel = () => {
             render: (text, record) => (
                 <>
                     <Button type="link" onClick={() => showModal(record)}>Edit</Button>
-                    <Button type="link" danger onClick={() => handleDeleteUser(record.key)}>Remove</Button>
+                    <Button type="link" danger onClick={() => handleDeleteUser(record._id)}>Remove</Button>
                     <Button type="link" onClick={() => showDetailsModal(record)}>Details</Button>
                 </>
             ),
         },
     ];
 
-    // Filter data based on search input and filters
-    const filteredData = data.filter(user => 
-        (user.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchText.toLowerCase()) ||
-        user.aadhaar.toLowerCase().includes(searchText.toLowerCase()) ||
-        user.pan.toLowerCase().includes(searchText.toLowerCase())) &&
-        (approvalFilter ? user.approval === approvalFilter : true) &&
-        (statusFilter ? user.status === statusFilter : true)
-    );
+    const filteredData = data.filter(user => {
+        const matchesSearch = user.username.toLowerCase().includes(searchText.toLowerCase()) ||
+            user.email.toLowerCase().includes(searchText.toLowerCase()) ||
+            user.aadhaar.toLowerCase().includes(searchText.toLowerCase()) ||
+            user.pan.toLowerCase().includes(searchText.toLowerCase());
+
+        const matchesApproval = !approvalFilter || user.kycStatus === approvalFilter;
+
+        const matchesStatus = !statusFilter || user.status === statusFilter || user.kycStatus === approvalFilter;
+
+        return matchesSearch && matchesApproval && matchesStatus;
+    });
+    console.log(filteredData)
 
     // Pagination change handler
     const handlePageChange = (page) => {
         setCurrentPage(page);
+    };
+
+    // Handle Save User (Approve/Reject)
+    const handleSaveUser = (values) => {
+        const { kycStatus } = values;
+
+        // Show confirmation popup
+        antdConfirm({
+            title: 'KYC Status',
+            icon: <ExclamationCircleOutlined />,
+            content: `Are you sure you want to ${kycStatus === 'approved' ? 'approve' : 'reject'} this user? This action cannot be undone.`,
+            onOk: async () => {
+                try {
+                    // Call the appropriate API based on the KYC status
+                    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/admin/${kycStatus === 'approved' ? 'approveUser' : 'rejectUser'}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ aadhaar: editingUser.aadhaar }),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Error processing user status');
+                    }
+
+                    const result = await response.json();
+                    message.success(result.message || 'User processed successfully');
+
+                    // Disable the KYC dropdown after confirmation
+                    setKycDisabled(true);
+
+                    // Update the local state with the new KYC status
+                    setData(data.map((user) => user._id === editingUser._id ? { ...user, ...values } : user));
+                    setIsModalVisible(false);  // Close the modal
+
+                } catch (error) {
+                    console.error('Error:', error);
+                    message.error('Error processing KYC status');
+                }
+            },
+            onCancel() {
+                console.log('Cancel action');
+            },
+        });
     };
 
     return (
@@ -140,21 +213,21 @@ const CustomerPanel = () => {
             <Row gutter={16}>
                 <Col>
                     <Input
-                        placeholder="Search by Name, Email, Aadhaar or PAN"
+                        placeholder="Search by Username, Email, Aadhaar or PAN"
                         onChange={(e) => setSearchText(e.target.value)}
                         style={searchInputStyle}
                     />
                 </Col>
                 <Col>
                     <Select
-                        placeholder="Filter by Approval"
+                        placeholder="Filter by KYC Status"
                         onChange={(value) => setApprovalFilter(value)}
                         style={{ width: 200 }}
                         allowClear
                     >
-                        <Option value="Approved">Approved</Option>
-                        <Option value="Rejected">Rejected</Option>
-                        <Option value="Pending">Pending</Option>
+                        <Option value="approved">Approved</Option>
+                        <Option value="rejected">Rejected</Option>
+                        <Option value="pending">Pending</Option>
                     </Select>
                 </Col>
                 <Col>
@@ -164,8 +237,8 @@ const CustomerPanel = () => {
                         style={{ width: 200 }}
                         allowClear
                     >
-                        <Option value="Active">Active</Option>
-                        <Option value="Frozen">Frozen</Option>
+                        <Option value="active">Active</Option>
+                        <Option value="frozen">Frozen</Option>
                     </Select>
                 </Col>
             </Row>
@@ -194,7 +267,7 @@ const CustomerPanel = () => {
             >
                 <Form
                     onFinish={handleSaveUser}
-                    initialValues={editingUser || { status: 'Active', approval: 'Pending' }} // Default approval is pending
+                    initialValues={editingUser || { status: 'active', kycStatus: 'pending' }} // Default values
                 >
                     <Form.Item
                         name="status"
@@ -202,26 +275,29 @@ const CustomerPanel = () => {
                         rules={[{ required: true }]}
                     >
                         <Select>
-                            <Option value="Active">Active</Option>
-                            <Option value="Frozen">Frozen</Option>
+                            <Option value="active">Active</Option>
+                            <Option value="frozen">Frozen</Option>
                         </Select>
                     </Form.Item>
+
                     <Form.Item
-                        name="approval"
-                        label="Approval"
+                        name="kycStatus"
+                        label="KYC Status"
                         rules={[{ required: true }]}
+                        style={editingUser?.kycStatus === 'approved' ? { display: 'none' } : {}} // Hide if approved
                     >
-                        <Select>
-                            <Option value="Approved">Approve</Option>
-                            <Option value="Rejected">Reject</Option>
-                            <Option value="Pending">Pending</Option>
+                        <Select disabled={editingUser?.kycDisabled}>
+                            <Option value="approved">Approve</Option>
+                            <Option value="rejected">Reject</Option>
                         </Select>
                     </Form.Item>
+
                     <Form.Item>
                         <Button type="primary" htmlType="submit">
                             Save
                         </Button>
                     </Form.Item>
+
                 </Form>
             </Modal>
 
@@ -242,18 +318,19 @@ const CustomerPanel = () => {
                         layout="horizontal"
                         style={descriptionStyle}
                     >
-                        <Descriptions.Item label="userName">{viewingUser.name}</Descriptions.Item>
+                        <Descriptions.Item label="Username">{viewingUser.username}</Descriptions.Item>
                         <Descriptions.Item label="Email">{viewingUser.email}</Descriptions.Item>
                         <Descriptions.Item label="PAN">{viewingUser.pan}</Descriptions.Item>
                         <Descriptions.Item label="Aadhaar">{viewingUser.aadhaar}</Descriptions.Item>
-                        <Descriptions.Item label="Date of Birth">{viewingUser.dob}</Descriptions.Item>
-                        <Descriptions.Item label="Phone Number">{viewingUser.phone}</Descriptions.Item>
-                        <Descriptions.Item label="Country">{viewingUser.country}</Descriptions.Item>
-                        <Descriptions.Item label="State">{viewingUser.state}</Descriptions.Item>
-                        <Descriptions.Item label="City">{viewingUser.city}</Descriptions.Item>
-                        <Descriptions.Item label="Bank Account">{viewingUser.bankAccount}</Descriptions.Item>
-                        <Descriptions.Item label="Branch MICR Code">{viewingUser.branchMicr}</Descriptions.Item>
-                        <Descriptions.Item label="Branch IFSC">{viewingUser.branchIfsc}</Descriptions.Item>
+                        <Descriptions.Item label="Mobile Number">{viewingUser.mobileNumber}</Descriptions.Item>
+                        <Descriptions.Item label="Status">{viewingUser.status}</Descriptions.Item>
+                        <Descriptions.Item label="KYC Status">{viewingUser.kycStatus}</Descriptions.Item>
+                        <Descriptions.Item label="Profile Photo">
+                            <img src={viewingUser.profilePhoto} alt="Profile" style={{ width: 100 }} />
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Signature">
+                            <img src={viewingUser.signature} alt="Signature" style={{ width: 100 }} />
+                        </Descriptions.Item>
                     </Descriptions>
                 )}
             </Modal>
@@ -261,7 +338,7 @@ const CustomerPanel = () => {
     );
 };
 
-// Inline CSS
+// Styles (you can adjust them as needed)
 const containerStyle = {
     padding: '20px',
     backgroundColor: '#f9f9f9',
@@ -275,7 +352,9 @@ const titleStyle = {
 
 const searchInputStyle = {
     marginBottom: '10px',
-    width: '300px',
+    width: '500px',
+    marginLeft: 'auto',
+    display: 'block',
 };
 
 const tableStyle = {
