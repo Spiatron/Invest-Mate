@@ -20,7 +20,8 @@ import { UsernameProvider } from './components/UserLogin/UsernameContext'
 import ForgetPassword from './components/UserLogin/ForgetPassword';
 import CustomerPanel from './components/Admin/CustomerPanel';
 import BuyAndSell from './components/BuyAndSell/BuyAndSell';
-import Graph from './components/Graph'
+//import Graph from './components/Graph'
+import StockCharts from './components/BuyAndSell/StockCharts';
 
 function App() {
   return (
@@ -51,8 +52,7 @@ function App() {
             <Route path="/forgetpassword" element={<ForgetPassword />} />
             <Route path="/CustomerPanel" element={<CustomerPanel />} />
             <Route path="/Buy&Sell" element={<BuyAndSell />} />
-            <Route path="/graph" element={<Graph />} />
-            <Route path="/webSocket" element={<webSocket />} />
+            <Route path="/graph" element={<StockCharts />} />
             {/* Add other routes as necessary */}
           </Routes>
         </Layout>
