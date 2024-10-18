@@ -19,7 +19,9 @@ const Navbar = () => {
     { key: '3', label: <Link to="/pricing">Pricing</Link> },
     { key: '4', label: <Link to="/support">Support-Contact Us</Link> },
     { key: '5', label: <Link to="/about">About</Link> },
-    { key: '6', label: <Link to="/graph">Graph</Link> },
+    // { key: '6', label: <Link to="/graph">Graph</Link> },
+    // { key: '7', label: <Link to="/liveData">test</Link> },
+   { key: '8', label: <Link to="/adminLogin">adminLogin</Link> },
   ];
 
   // Function to handle logout

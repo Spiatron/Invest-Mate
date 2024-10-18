@@ -40,22 +40,32 @@ const SignupForm = () => {
 
     const onFinish = async (values) => {
         const fullPhoneNumber = `${phoneCode}${values.mobileNumber}`;
-
+        
+        // Get full country name from the selected country ISO code
+        const countryName = Country.getAllCountries().find(
+            (country) => country.isoCode === selectedCountry
+        )?.name;
+        
+        // Get full state name from the selected state ISO code
+        const stateName = State.getStatesOfCountry(selectedCountry).find(
+            (state) => state.isoCode === values.state
+        )?.name;
+    
         const payload = {
             username: values.username,
             email: values.email, // Use the email from form values
             mobileNumber: fullPhoneNumber,
             address: {
-                country: selectedCountry,
-                state: values.state,
+                country: countryName, // Full country name
+                state: stateName, // Full state name
                 city: values.city,
             },
             role: "user", // Set role to 'user' by default
             password: values.password,
         };
-
+    
         console.log('Sending payload: ', payload);
-
+    
         try {
             const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/user/register-step1`, {
                 method: 'POST',
@@ -64,10 +74,10 @@ const SignupForm = () => {
                 },
                 body: JSON.stringify(payload),
             });
-
+    
             const result = await response.json();
             console.log('API response:', result);
-
+    
             if (response.ok) {
                 setEmail(values.email); // Store the email in local state
                 message.success('OTP sent successfully! Check your email for the OTP.');

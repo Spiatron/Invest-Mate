@@ -21,42 +21,99 @@ const CustomerPanel = () => {
     const pageSize = 10;
 
     // Fetch users from the API with filters applied
+    // const fetchUsers = async () => {
+    //     try {
+    //         let url = '';
+    
+    //         // Determine which API to hit based on the filters
+    //         if (approvalFilter) {
+    //             // If 'kycStatus' filter is applied, use the 'getUsersByKYC' endpoint
+    //             url = `${process.env.REACT_APP_API_URL}/api/v1/admin/getUsersByKYC?kycStatus=${approvalFilter}`;
+    //         } else if (statusFilter) {
+    //             // If 'status' filter is applied, use the 'getUsersByStatus' endpoint
+    //             url = `${process.env.REACT_APP_API_URL}/api/v1/admin/getUsersByStatus?status=${statusFilter}`;
+    //         } else {
+    //             // If no filters are applied, default to fetching pending users from 'getUsersByKYC'
+    //             url = `${process.env.REACT_APP_API_URL}/api/v1/admin/getUsersByKYC`;
+    //         }
+    
+    //         // If there is search text, append it to the URL
+    //         if (searchText) {
+    //             const searchParam = `search=${encodeURIComponent(searchText)}`;
+    //             url += url.includes('?') ? `&${searchParam}` : `?${searchParam}`;
+    //         }
+    
+    //         console.log('Fetching URL:', url); // Debugging to check the constructed URL
+    
+    //         const response = await fetch(url, { method: 'GET' ,
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //             "token": localStorage.getItem('token')
+    //         },
+    //     });
+    //         const users = await response.json();
+    
+    //         console.log('Fetched users:', users);
+    //         setData(users);  // Update the state with the fetched users
+    
+    //     } catch (error) {
+    //         console.error('Error fetching users:', error);
+    //     }
+    // };
+    
     const fetchUsers = async () => {
         try {
             let url = '';
     
             // Determine which API to hit based on the filters
             if (approvalFilter) {
-                // If 'kycStatus' filter is applied, use the 'getUsersByKYC' endpoint
                 url = `${process.env.REACT_APP_API_URL}/api/v1/admin/getUsersByKYC?kycStatus=${approvalFilter}`;
             } else if (statusFilter) {
-                // If 'status' filter is applied, use the 'getUsersByStatus' endpoint
                 url = `${process.env.REACT_APP_API_URL}/api/v1/admin/getUsersByStatus?status=${statusFilter}`;
             } else {
-                // If no filters are applied, default to fetching pending users from 'getUsersByKYC'
                 url = `${process.env.REACT_APP_API_URL}/api/v1/admin/getUsersByKYC`;
             }
     
-            // If there is search text, append it to the URL
             if (searchText) {
                 const searchParam = `search=${encodeURIComponent(searchText)}`;
                 url += url.includes('?') ? `&${searchParam}` : `?${searchParam}`;
             }
     
-            console.log('Fetching URL:', url); // Debugging to check the constructed URL
+            console.log('Fetching URL:', url); // Debugging
     
-            const response = await fetch(url, { method: 'GET' });
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    "token": localStorage.getItem('token')
+                },
+            });
+            
+            // Check if the response is ok (HTTP status code in the range 200-299)
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('API Error:', errorData.error); // Print the specific error from the response
+                throw new Error(errorData.error || 'Failed to fetch users');
+            }
+    
             const users = await response.json();
     
             console.log('Fetched users:', users);
-            setData(users);  // Update the state with the fetched users
+            
+            // Check if users is an array before setting the state
+            if (Array.isArray(users)) {
+                setData(users);  // Update state with fetched users
+            } else {
+                throw new Error('Expected an array of users');
+            }
     
         } catch (error) {
             console.error('Error fetching users:', error);
+            message.error(error.message || 'Error fetching users');
         }
     };
     
-    
+
 
     // Fetch users whenever filters or search text change
     useEffect(() => {

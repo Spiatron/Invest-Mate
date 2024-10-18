@@ -22,6 +22,9 @@ import CustomerPanel from './components/Admin/CustomerPanel';
 import BuyAndSell from './components/BuyAndSell/BuyAndSell';
 //import Graph from './components/Graph'
 import StockCharts from './components/BuyAndSell/StockCharts';
+import LiveData from './components/LiveData';
+import AdminLoginForm from './components/Admin/AdminLoginForm';
+import AdminForgetPassword from './components/Admin/AdminForgetPassword';
 
 function App() {
   return (
@@ -53,6 +56,9 @@ function App() {
             <Route path="/CustomerPanel" element={<CustomerPanel />} />
             <Route path="/Buy&Sell" element={<BuyAndSell />} />
             <Route path="/graph" element={<StockCharts />} />
+            <Route path="/liveData" element={<LiveData />} />
+            <Route path="/adminLogin" element={<AdminLoginForm />} />
+            <Route path="/adminForgetpassword" element={<AdminForgetPassword />} />
             {/* Add other routes as necessary */}
           </Routes>
         </Layout>

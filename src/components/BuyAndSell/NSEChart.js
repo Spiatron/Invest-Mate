@@ -15,9 +15,17 @@ const NSEChart = () => {
   // Load existing chart data from localStorage on component mount
   useEffect(() => {
     const savedData = localStorage.getItem('chartData');
-
+    
+    // Validate and parse saved data from localStorage
     if (savedData) {
-      setChartData(JSON.parse(savedData));
+      try {
+        const parsedData = JSON.parse(savedData);
+        if (Array.isArray(parsedData)) {
+          setChartData(parsedData);
+        }
+      } catch (error) {
+        console.error('Error parsing chartData from localStorage:', error);
+      }
     }
 
     const chart = createChart(chartRef.current, {
@@ -57,7 +65,14 @@ const NSEChart = () => {
 
     // If there's saved data, set it in the chart
     if (savedData) {
-      series.setData(JSON.parse(savedData));
+      try {
+        const parsedData = JSON.parse(savedData);
+        if (Array.isArray(parsedData)) {
+          series.setData(parsedData);
+        }
+      } catch (error) {
+        console.error('Error setting saved chart data:', error);
+      }
     }
 
     return () => chart.remove();
@@ -72,26 +87,35 @@ const NSEChart = () => {
     };
 
     ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+      try {
+        const data = JSON.parse(event.data);
 
-      if (areaSeries) {
-        const newEntry = { time: data.time, value: data.value };
+        // Validate the received data
+        if (data && typeof data.value === 'number' && typeof data.time === 'number') {
+          const newEntry = { time: data.time, value: data.value };
 
-        const updatedData = [...chartData, newEntry]; // Add new data point to chartData
+          if (areaSeries) {
+            const updatedData = [...chartData, newEntry]; // Add new data point to chartData
 
-        areaSeries.update(newEntry); // Update the chart with the new data point
-        setChartData(updatedData); // Update the chartData state
+            areaSeries.update(newEntry); // Update the chart with the new data point
+            setChartData(updatedData); // Update the chartData state
 
-        // Update today's high and low values based on the received data
-        if (data.value > todaysHigh) {
-          setTodaysHigh(data.value); // Update today's high if the new value is higher
+            // Update today's high and low values based on the received data
+            if (data.value > todaysHigh) {
+              setTodaysHigh(data.value); // Update today's high if the new value is higher
+            }
+            if (data.value < todaysLow || todaysLow === 0) {
+              setTodaysLow(data.value); // Update today's low if the new value is lower or if it's the first value
+            }
+
+            // Save the updated chartData to localStorage
+            localStorage.setItem('chartData', JSON.stringify(updatedData));
+          }
+        } else {
+          console.error('Invalid data received:', data);
         }
-        if (data.value < todaysLow || todaysLow === 0) {
-          setTodaysLow(data.value); // Update today's low if the new value is lower or if it's the first value
-        }
-
-        // Save the updated chartData to localStorage
-        localStorage.setItem('chartData', JSON.stringify(updatedData));
+      } catch (error) {
+        console.error('Error processing WebSocket message:', error);
       }
     };
 
@@ -108,8 +132,8 @@ const NSEChart = () => {
         <Card bordered={false} style={{ width: '100%', maxWidth: '1000px', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)', }}>
           <div ref={chartRef} style={{ height: '400px', width: '100%' }} />
         </Card>
-       {/* Statistics Card - positioned below the chart */}
-       <Card 
+        {/* Statistics Card - positioned below the chart */}
+        <Card 
           bordered={false} 
           style={{ 
             width: '100%', 

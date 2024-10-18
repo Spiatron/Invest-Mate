@@ -18,7 +18,9 @@ const Layout = ({ children }) => {
     location.pathname === '/aadhaar' ||
     location.pathname === '/pan-step' ||
     location.pathname === '/segment-selection' ||
-    location.pathname === '/SignupForm';
+    location.pathname === '/SignupForm'||
+    location.pathname === '/adminLogin'||
+    location.pathname === '/adminForgetpassword';
 
   console.log('Current Path:', location.pathname);
   console.log('username:', username); 

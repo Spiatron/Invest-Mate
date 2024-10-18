@@ -1,88 +1,215 @@
-import React, { useState } from 'react';
-import { Table, Button, Modal, Form, Input, Select, Pagination, Row, Col, Typography } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Table, Button, Modal, Form, Input, Pagination, Typography, Select, Row, Col, message } from 'antd';
+import { Country, State, City } from 'country-state-city';
 
-const { Option } = Select;
 const { Title } = Typography;
+const { Option } = Select;
 
 const AdminPanel = () => {
-    const [data, setData] = useState([...Array(50).keys()].map((i) => ({
-        key: i,
-        name: `User ${i + 1}`,
-        status: i % 2 === 0 ? 'Active' : 'Frozen',
-        accountType: i % 2 === 0 ? 'Customer' : 'Demat',
-        paymentStatus: i % 3 === 0 ? 'Pending' : 'Approved'
-    })));
+    const [data, setData] = useState([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [editingUser, setEditingUser] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
+    const [selectedCountry, setSelectedCountry] = useState('IN');
+    const [selectedState, setSelectedState] = useState('');    
+
+    const [form] = Form.useForm(); // Create form instance
 
     const pageSize = 10;
 
-    // Show Modal for Add/Edit
-    const showModal = (user = null) => {
-        setEditingUser(user);
+    const showModal = () => {
         setIsModalVisible(true);
     };
 
-    // Handle Save User
-    const handleSaveUser = (values) => {
-        if (editingUser) {
-            setData(data.map((user) => user.key === editingUser.key ? { ...editingUser, ...values } : user));
-        } else {
-            setData([...data, { ...values, key: data.length }]);
-        }
-        setIsModalVisible(false);
-    };
+    useEffect(() => {
+        const fetchModerators = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    message.error("Token not found");
+                    console.error("Token not found");
+                    return;
+                }
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/admin/getAllModerators`, {
+                    method: 'GET',
+                    headers: {
+                        "token": token,
+                    },
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    const formattedData = result.map((item, index) => ({
+                        key: index,
+                        username: item.username,
+                        email: item.email,
+                        mobileNumber: item.mobileNumber,
+                        aadhaar: item.aadhaar,
+                        pan: item.pan,
+                        country: item.address.country,
+                        state: item.address.state,
+                        city: item.address.city,
+                    }));
+                    setData(formattedData);
+                } else {
+                    message.error('Failed to fetch moderators');
+                }
+            } catch (error) {
+                console.error('Error fetching moderators:', error);
+                message.error('Error fetching moderators');
+            }
+        };
 
-    // Handle Delete User
-    const handleDeleteUser = (key) => {
-        setData(data.filter(user => user.key !== key));
-    };
+        fetchModerators();
+    }, []);
 
-    // Table Columns
+    // const handleSaveUser = async (values) => {
+    //     setData([...data, { ...values, key: data.length }]);
+    //     setIsModalVisible(false);
+    //     form.resetFields(); // Reset form fields after saving
+    // };
+
     const columns = [
         {
-            title: 'Name',
-            dataIndex: 'name',
-            key: 'name',
+            title: 'Username',
+            align: 'center',
+            dataIndex: 'username',
+            key: 'username',
         },
         {
-            title: 'Status',
-            dataIndex: 'status',
-            key: 'status',
+            title: 'Email',
+            align: 'center',
+            dataIndex: 'email',
+            key: 'email',
         },
         {
-            title: 'Account Type',
-            dataIndex: 'accountType',
-            key: 'accountType',
+            title: 'Mobile Number',
+            align: 'center',
+            dataIndex: 'mobileNumber',
+            key: 'mobileNumber',
         },
         {
-            title: 'Payment Status',
-            dataIndex: 'paymentStatus',
-            key: 'paymentStatus',
+            title: 'Aadhaar Number',
+            align: 'center',
+            dataIndex: 'aadhaar',
+            key: 'aadhaar',
+        },
+        {
+            title: 'PAN Number',
+            align: 'center',
+            dataIndex: 'pan',
+            key: 'pan',
+        },
+        {
+            title: 'Country',
+            align: 'center',
+            dataIndex: 'country',
+            key: 'country',
+        },
+        {
+            title: 'State',
+            align: 'center',
+            dataIndex: 'state',
+            key: 'state',
+        },
+        {
+            title: 'City',
+            align: 'center',
+            dataIndex: 'city',
+            key: 'city',
         },
         {
             title: 'Actions',
+            align: 'center',
             key: 'actions',
             render: (text, record) => (
                 <span>
-                    <Button type="link" onClick={() => showModal(record)}>Edit</Button>
-                    <Button type="link" danger onClick={() => handleDeleteUser(record.key)}>Delete</Button>
+                    <Button type="link" danger>Remove</Button>
                 </span>
             ),
         },
     ];
 
-    // Pagination change handler
+    const handleCountryChange = (value) => {
+        setSelectedCountry(value);
+        setSelectedState('');
+    };
+
+    const handleStateChange = (value) => {
+        setSelectedState(value);
+    };
+
     const handlePageChange = (page) => {
         setCurrentPage(page);
     };
 
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      message.error("Token not found");
+      console.error("Token not found");
+      return;
+    }
+
+    const handleSaveUser = async (values) => {
+    // Get full state name from the selected state ISO code
+    const stateName = State.getStatesOfCountry(selectedCountry).find(
+        (state) => state.isoCode === values.state
+    )?.name;
+
+        const payload = {
+            username: values.username,
+            email: values.email,
+            mobileNumber: `+91${values.mobileNumber}`,
+            address: {
+                country: values.country,
+                state: stateName,
+                city: values.city
+            },
+            role: 'moderator',
+            password: values.password,
+            aadhaar: values.aadhaar,
+            pan: values.pan,
+        };
+        console.log(payload);
+    
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/admin/addAdmin`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    "token": token,
+                },
+                body: JSON.stringify(payload),
+            });
+    
+            const data = await response.json();
+    
+            if (response.ok) {
+                // Success block
+                message.success(data.message); // Display success message
+                setIsModalVisible(false);
+                form.resetFields(); // Reset form fields after saving
+            } else {
+                // Error block (handling specific API errors)
+                message.error(`Error: ${data.error || 'Unknown error'}`, 5); // Display error message from the API
+            }
+    
+        } catch (error) {
+            // Catch block for network or unexpected errors
+            console.error('Error occurred:', error);
+            message.error(`Error: ${error.message}`, 5); // Display error message for 5 seconds
+        }
+    };
+    
+
+
     return (
         <div style={containerStyle}>
-            <Title level={2} style={titleStyle}>Admin User Management</Title>
-            <Button type="primary" onClick={() => showModal()} style={addButtonStyle}>Add User</Button>
-            
+            <div style={titleContainerStyle}>
+                <Title level={2} style={titleStyle}>Moderators Management</Title>
+            </div>
+            <Button type="primary" onClick={showModal} style={addButtonStyle}>Add Moderators</Button>
+
             <Table
                 columns={columns}
                 dataSource={data.slice((currentPage - 1) * pageSize, currentPage * pageSize)}
@@ -98,56 +225,128 @@ const AdminPanel = () => {
             />
 
             <Modal
-                title={editingUser ? "Edit User" : "Add User"}
                 visible={isModalVisible}
-                onCancel={() => setIsModalVisible(false)}
+                onCancel={() => {
+                    setIsModalVisible(false);
+                    form.resetFields(); // Reset fields when closing modal
+                }}
+
                 footer={null}
             >
-                <Form
-                    onFinish={handleSaveUser}
-                    initialValues={editingUser || { status: 'Active', accountType: 'Customer' }}
-                >
+                <Form form={form} onFinish={handleSaveUser} layout="vertical">
                     <Form.Item
-                        name="name"
-                        label="Name"
-                        rules={[{ required: true, message: 'Please enter user name' }]}
-                    >
-                        <Input />
+                        name="username"
+                        label="Username"
+                        rules={[{ required: true, message: 'Please enter a username' }]}>
+                        <Input placeholder="Enter username" />
                     </Form.Item>
                     <Form.Item
-                        name="status"
-                        label="Status"
-                        rules={[{ required: true }]}
-                    >
-                        <Select>
-                            <Option value="Active">Active</Option>
-                            <Option value="Frozen">Frozen</Option>
-                        </Select>
+                        name="email"
+                        label="Email"
+                        rules={[{ required: true, message: 'Please enter an email' }, { type: 'email', message: "Please include an '@' in your email address!" }]}>
+                        <Input placeholder="Enter email" />
                     </Form.Item>
                     <Form.Item
-                        name="accountType"
-                        label="Account Type"
-                        rules={[{ required: true }]}
-                    >
-                        <Select>
-                            <Option value="Customer">Customer</Option>
-                            <Option value="Demat">Demat</Option>
-                        </Select>
+                        name="mobileNumber"
+                        label="Mobile Number"
+                        rules={[{ required: true, message: 'Please enter a mobile number' }, { len: 10, message: 'Mobile number must be 10 digits' }]}>
+                        <Input addonBefore="+91" placeholder="Enter mobile number" />
                     </Form.Item>
-                    <Form.Item
-                        name="paymentStatus"
-                        label="Payment Status"
-                        rules={[{ required: true }]}
-                    >
-                        <Select>
-                            <Option value="Pending">Pending</Option>
-                            <Option value="Approved">Approved</Option>
-                            <Option value="Rejected">Rejected</Option>
-                        </Select>
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <Form.Item
+                                name="aadhaar"
+                                label="Aadhaar Number"
+                                rules={[{ required: true, message: 'Please enter your Aadhaar number' }, { len: 12, message: 'Aadhaar number must be 12 digits' }, { pattern: /^\d{12}$/, message: 'Aadhaar number must be numeric' }]}>
+                                <Input placeholder="Enter Aadhaar number" />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                name="pan"
+                                label="PAN Number"
+                                rules={[{ required: true, message: 'Please enter your PAN number' },
+                                { pattern: /^[A-Z0-9]{10}$/, message: 'Must be a 10-digit alphanumeric code!' },
+                                ]}>
+                                <Input placeholder="Enter PAN number" />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <Form.Item label="Address" required>
+                        <Row gutter={16}>
+                            <Col span={8}>
+                                <Form.Item
+                                    name="country"
+                                    initialValue="India"
+                                    rules={[{ required: true, message: 'Please select a country' }]}>
+                                    <Select onChange={handleCountryChange} placeholder="Country" disabled>
+                                        {Country.getAllCountries().map((country) => (
+                                            <Option key={country.isoCode} value={country.isoCode}>
+                                                {country.name}
+                                            </Option>
+                                        ))}
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col span={8}>
+                                <Form.Item
+                                    name="state"
+                                    rules={[{ required: true, message: 'Please select a state' }]}>
+                                    <Select onChange={handleStateChange} placeholder="State" disabled={!selectedCountry}>
+                                        {State.getStatesOfCountry(selectedCountry).map((state) => (
+                                            <Option key={state.isoCode} value={state.isoCode}>
+                                                {state.name}
+                                            </Option>
+                                        ))}
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col span={8}>
+                                <Form.Item
+                                    name="city"
+                                    rules={[{ required: true, message: 'Please select a city' }]}>
+                                    <Select placeholder="City" disabled={!selectedState}>
+                                        {City.getCitiesOfState(selectedCountry, selectedState).map((city) => (
+                                            <Option key={city.name} value={city.name}>
+                                                {city.name}
+                                            </Option>
+                                        ))}
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                        </Row>
                     </Form.Item>
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <Form.Item
+                                name="password"
+                                label="Password"
+                                rules={[{ required: true, message: 'Please enter a password' }, { min: 8, message: 'Password must be at least 8 characters long!' }]}>
+                                <Input.Password placeholder="Enter password" />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                name="confirmPassword"
+                                label="Confirm Password"
+                                rules={[
+                                    { required: true, message: 'Please confirm your password' },
+                                    ({ getFieldValue }) => ({
+                                        validator(_, value) {
+                                            if (!value || getFieldValue('password') === value) {
+                                                return Promise.resolve();
+                                            }
+                                            return Promise.reject(new Error('The two passwords do not match!'));
+                                        },
+                                    }),
+                                ]}>
+                                <Input.Password placeholder="Confirm password" />
+                            </Form.Item>
+                        </Col>
+                    </Row>
                     <Form.Item>
-                        <Button type="primary" htmlType="submit">
-                            {editingUser ? 'Save' : 'Add'}
+                        <Button type="primary" htmlType="submit" style={{ width: '100%' }}>
+                            Add Admin
                         </Button>
                     </Form.Item>
                 </Form>
@@ -156,16 +355,20 @@ const AdminPanel = () => {
     );
 };
 
-// Inline CSS
 const containerStyle = {
     padding: '20px',
     backgroundColor: '#f9f9f9',
     minHeight: '100vh',
 };
 
-const titleStyle = {
-    textAlign: 'center',
+const titleContainerStyle = {
+    display: 'flex',
+    justifyContent: 'center',
     marginBottom: '20px',
+};
+
+const titleStyle = {
+    margin: 0,
 };
 
 const addButtonStyle = {

@@ -52,24 +52,24 @@ const StockCharts = () => {
           {activeTab === 'nse' ? (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <h2>NIFTY 24964.25 <span style={{ color: '#ff0000' }}>-34.20 (-0.14%)</span></h2>
-              <div style={{ display: 'flex', gap: '10px' }}>
+              {/* <div style={{ display: 'flex', gap: '10px' }}>
                 <Button >1D</Button>
                 <Button>1M</Button>
                 <Button>3M</Button>
                 <Button>1Y</Button>
                 <Button>3Y</Button>
-              </div>
+              </div> */}
             </div>
           ) : (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <h2>BSE 56789.25 <span style={{ color: '#ff0000' }}>-124.25 (-0.22%)</span></h2>
-              <div style={{ display: 'flex', gap: '10px' }}>
+              {/* <div style={{ display: 'flex', gap: '10px' }}>
                 <Button>1D</Button>
                 <Button>1M</Button>
                 <Button>3M</Button>
                 <Button>1Y</Button>
                 <Button>3Y</Button>
-              </div>
+              </div> */}
             </div>
           )}
 
