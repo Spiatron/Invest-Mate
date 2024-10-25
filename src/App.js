@@ -25,6 +25,7 @@ import StockCharts from './components/BuyAndSell/StockCharts';
 import LiveData from './components/LiveData';
 import AdminLoginForm from './components/Admin/AdminLoginForm';
 import AdminForgetPassword from './components/Admin/AdminForgetPassword';
+import TransactionHistory from './components/BuyAndSell/TransactionHistory';
 
 function App() {
   return (
@@ -59,6 +60,7 @@ function App() {
             <Route path="/liveData" element={<LiveData />} />
             <Route path="/adminLogin" element={<AdminLoginForm />} />
             <Route path="/adminForgetpassword" element={<AdminForgetPassword />} />
+            <Route path="/TransactionHistory" element={<TransactionHistory />} />
             {/* Add other routes as necessary */}
           </Routes>
         </Layout>

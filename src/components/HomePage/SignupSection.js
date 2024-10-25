@@ -6,13 +6,15 @@ const { Title, Text, Link } = Typography;
 
 const SignupSection = () => {
   const sectionStyle = {
-    padding: '40px 20px',
+    backgroundColor: '#1C1C1C', // Dark background
+    padding: '20px 0', // Padding for space around the content
     textAlign: 'center',
-    backgroundColor: '#fff',
+    borderRadius: '30px', // Rounded corners for a softer look
+    margin: '50px 0',
   };
 
   const buttonStyle = {
-    marginTop: '20px',
+    marginTop: '10px',
     color: '#fff',
     borderRadius: '5px',
   };
@@ -21,8 +23,8 @@ const SignupSection = () => {
     <div style={sectionStyle}>
       <Row justify="center" align="middle">
         <Col xs={24} sm={24} md={12}>
-          <Title level={3}>Open a demat account</Title>
-          <Text style={{ display: 'block', marginBottom: '20px' }}>
+          <Title level={3} style={{fontSize: '32px', fontWeight: 700, color:"#fff"}}>Open a demat account</Title>
+          <Text style={{ fontSize: '20px',display: 'block', marginBottom: '20px', color:"#fff" }}>
             Modern platforms and apps, ₹0 investments, and flat ₹20 intraday and F&O trades.
           </Text>
           <Link href="/SignupForm">

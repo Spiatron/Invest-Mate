@@ -38,7 +38,7 @@ const ProfileSettings = () => {
 
   useEffect(() => {
     // API request to get user data
-    fetch('http://localhost:3000/api/v1/user/getUser',{
+    fetch(`${process.env.REACT_APP_API_URL}/api/v1/user/getUser`,{
 
     method: 'GET',
         headers: {

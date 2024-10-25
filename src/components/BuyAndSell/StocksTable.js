@@ -1,147 +1,119 @@
-import React, { useState } from 'react';
-import { Table, InputNumber, Button, message } from 'antd';
-import { PlusOutlined, MinusOutlined } from '@ant-design/icons'; // Import Ant Design icons
+import React, { useState, useEffect } from 'react';
+import { Table, InputNumber, Button, message, Input } from 'antd';
+import { PlusOutlined, MinusOutlined, HistoryOutlined } from '@ant-design/icons';
+import { Link } from 'react-router-dom'; 
+import { Modal } from 'antd';
 
-const StocksTable = () => {
-  // Stock data with initial quantities set to 1
-  const initialStockData = [
-    {
-      key: '1',
-      stock: 'Sensex',
-      price: 61560.64,
-      change: '-371.83 (-0.60%)',
-      index: 'INDICES',
-      quantity: 1,
-    },
-    {
-      key: '2',
-      stock: 'Nifty 50',
-      price: 18181.75,
-      change: '-104.75 (-0.57%)',
-      index: 'INDICES',
-      quantity: 1,
-    },
-    {
-      key: '3',
-      stock: 'Astron',
-      price: 26.05,
-      change: '-0.35 (-1.32%)',
-      index: 'NSE',
-      quantity: 1,
-    },
-    {
-      key: '4',
-      stock: 'Asian Paint',
-      price: 3092.45,
-      change: '-45.65 (-1.45%)',
-      index: 'NSE',
-      quantity: 1,
-    },
-    {
-      key: '5',
-      stock: 'Rites',
-      price: 396.50,
-      change: '+8.15 (+2.09%)',
-      index: 'NSE',
-      quantity: 1,
-    },
-    {
-      key: '6',
-      stock: 'BHEL',
-      price: 82.30,
-      change: '+0.74 (+0.90%)',
-      index: 'BSE',
-      quantity: 1,
-    },
-    {
-      key: '7',
-      stock: 'Reliance',
-      price: 2439.30,
-      change: '-14.50 (-0.59%)',
-      index: 'NSE',
-      quantity: 1,
-    },
-    {
-      key: '8',
-      stock: 'Nifty Bees',
-      price: 199.79,
-      change: '-0.76 (-0.37%)',
-      index: 'BSE',
-      quantity: 1,
-    },
-  ];
+const StocksTable = ({ stockData }) => {
+  // Manage the stock data with quantities
+  const [stocks, setStocks] = useState([]);
+  const [searchTerm, setSearchTerm] = useState(''); // State for the search term
 
-  // State to manage stock data including quantities
-  const [stockData, setStockData] = useState(initialStockData);
+
+  // Update stock data when receiving new data from props (OLD)
+  // useEffect(() => {
+  //   if (stockData.length) {
+  //     // Initialize quantities if not already set
+  //     const updatedStocks = stockData.map((stock) => ({
+  //       ...stock,
+  //       quantity: stock.quantity || 1, // Set default quantity to 1
+  //     }));
+  //     setStocks(updatedStocks);
+  //   }
+  // }, [stockData]);
+
+  // Update stock data when receiving new data from props
+  useEffect(() => {
+    if (stockData.length) {
+      // Merge the new stock data with the existing quantities
+      const updatedStocks = stockData.map((stock) => {
+        const existingStock = stocks.find((s) => s.key === stock.key); // Find the stock in the current state
+        return {
+          ...stock,
+          quantity: existingStock ? existingStock.quantity : stock.quantity || 1, // Preserve quantity or set default
+        };
+      });
+      setStocks(updatedStocks);
+    }
+  }, [stockData]); // Dependencies: update when stockData changes
+
+  const token = localStorage.getItem('token');
+  if (!token) {
+    message.error("Token not found");
+    console.error("Token not found");
+    return;
+  }
 
   // Define columns for Ant Design Table
   const columns = [
     {
       title: 'Stock Name',
-      dataIndex: 'stock',
-      key: 'stock',
+      dataIndex: 'name',
+      align: 'center',
+      key: 'name',
     },
     {
       title: 'Current Price',
-      dataIndex: 'price',
-      key: 'price',
-      render: (price) => `₹${price.toFixed(2)}`, // Format price
-    },
-    {
-      title: 'Market',
-      dataIndex: 'index',
-      key: 'index',
+      dataIndex: 'lastPrice',
+      align: 'center',
+      key: 'lastPrice',
+      render: (price) => `₹${price}`,
+      // render: (price) => `₹${price.toFixed(1)}`, // Format price
     },
     {
       title: 'Quantity',
       key: 'quantity',
+      align: 'center',
       render: (text, record) => (
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div>
           <Button
             icon={<MinusOutlined />}
             onClick={() => handleQuantityChange(record.key, record.quantity - 1)}
             disabled={record.quantity <= 1}
             size="small"
-            style={{ marginRight: '4px' }} // Small margin for spacing
+            style={{ marginRight: '4px' }}
           />
           <InputNumber
             min={1}
             value={record.quantity}
             onChange={(value) => handleQuantityChange(record.key, value)}
-            style={{ width: '50px', margin: '0 4px' }} // Smaller width for the quantity input
+            style={{ width: '50px', margin: '0 4px' }}
           />
           <Button
             icon={<PlusOutlined />}
             onClick={() => handleQuantityChange(record.key, record.quantity + 1)}
             size="small"
-            style={{ marginLeft: '4px' }} // Small margin for spacing
+            style={{ marginLeft: '4px' }}
           />
         </div>
       ),
     },
     {
-      title: 'Total Price',
+      title: 'Total Amount',
       key: 'totalPrice',
+      align: 'center',
       render: (text, record) => {
-        const totalPrice = record.price * record.quantity; // Calculate total price
-        return `₹${totalPrice.toFixed(2)}`; // Format total price
+        const totalPrice = record.lastPrice * record.quantity; // Calculate total price
+        //return `₹${totalPrice}`; 
+        return `₹${totalPrice.toFixed(2)}`; // Display total price
       },
     },
     {
       title: 'Actions',
       key: 'actions',
+      align: 'center',
       render: (text, record) => (
         <div>
           <Button
             type="primary"
-            onClick={() => handleBuy(record.stock, record.key, record.quantity, record.price)} // Pass stock name
+            onClick={() => handleBuy(record.name, record.key, record.quantity, record.lastPrice)}
             style={{ marginRight: '8px' }}
           >
             Buy
           </Button>
           <Button
-            type="danger"
-            onClick={() => handleSell(record.stock, record.key, record.quantity, record.price)} // Pass stock name
+            color="danger" variant="outlined"
+            onClick={() => handleSell(record.name, record.key, record.quantity, record.lastPrice)}
           >
             Sell
           </Button>
@@ -150,37 +122,127 @@ const StocksTable = () => {
     },
   ];
 
-  // Function to handle quantity changes
+  // Handle quantity change
   const handleQuantityChange = (key, value) => {
-    if (value < 1) return; // Prevent setting quantity below 1
-    setStockData((prevData) =>
-      prevData.map((item) =>
-        item.key === key ? { ...item, quantity: value } : item
-      )
+    if (value < 1) return;
+    setStocks((prevStocks) =>
+      prevStocks.map((item) => (item.key === key ? { ...item, quantity: value } : item))
     );
   };
 
-  // Function to handle Buy action
-  const handleBuy = (stock, key, quantity, price) => {
-    const totalPrice = price * quantity;
-    message.success(`Bought ${quantity} shares of ${stock} for ₹${totalPrice.toFixed(2)}`);
-    // Add your logic for buying the stock here
-  };
+  // Handle buy action
+const handleBuy = async (stock, key, quantity, price) => {
+  const totalPrice = price * quantity;
 
-  // Function to handle Sell action
-  const handleSell = (stock, key, quantity, price) => {
-    const totalPrice = price * quantity;
-    message.success(`Sold ${quantity} shares of ${stock} for ₹${totalPrice.toFixed(2)}`);
-    // Add your logic for selling the stock here
-  };
+  Modal.confirm({
+    title: 'Confirm Purchase',
+    content: `Are you sure you want to purchase ${quantity} share of ${stock} for a total amount of ₹${totalPrice}?`,
+    okText: 'Yes',
+    cancelText: 'No',
+    onOk: async () => {
+      const transactionData = {
+        stockName: stock,
+        pricePerUnit: price,
+        stockQuantity: quantity,
+        totalAmount: totalPrice,
+        transactionType: 'buy', // Add action type
+      };
+      console.log(`Payload of buy ${transactionData}`);
+
+      try {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/stocks/registerTransaction/buy`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'token': token, // Included token for authentication
+          },
+          body: JSON.stringify(transactionData),
+        });
+
+        if (response.ok) {
+          message.success(`You have bought ${quantity} shares of ${stock} for ₹${totalPrice}`);
+        } else {
+          message.error('Failed to process the buy request.');
+        }
+      } catch (error) {
+        message.error('An error occurred while processing the buy request.');
+        console.error('Buy transaction error:', error);
+      }
+    }
+  });
+};
+
+  // Handle sell action
+const handleSell = async (stock, key, quantity, price) => {
+  const totalPrice = price * quantity;
+
+  Modal.confirm({
+    title: 'Confirm Sale',
+    content: `Are you sure you want to sell ${quantity} share of ${stock} for a total amount of ₹${totalPrice}?`,
+    okText: 'Yes',
+    cancelText: 'No',
+    onOk: async () => {
+      const transactionData = {
+        stockName: stock,
+        pricePerUnit: price,
+        stockQuantity: quantity,
+        totalAmount: totalPrice,
+        transactionType: 'sell', // Add action type
+      };
+      console.log(`Payload of sell ${transactionData}`);
+
+      try {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/stocks/registerTransaction/sell`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'token': token, // Included token for authentication
+          },
+          body: JSON.stringify(transactionData),
+        });
+
+        if (response.ok) {
+          message.success(`You have sold ${quantity} shares of ${stock} for ₹${totalPrice}`);
+        } else {
+          message.error('Failed to process the sell request.');
+        }
+      } catch (error) {
+        message.error('An error occurred while processing the sell request.');
+        console.error('Sell transaction error:', error);
+      }
+    }
+  });
+};
+
+  // Filter stocks based on search term
+  const filteredStocks = stocks.filter((stock) =>
+    stock.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div style={{ maxWidth: '1600px', margin: '0 auto' }}>
+      {/* Wrapper div with flexbox for input and button */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <Input
+          placeholder="Search stock by name"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ width: 'auto' }}
+        />
+
+        {/* Transaction History Button */}
+        <Link to="/TransactionHistory">
+          <Button type="primary" icon={<HistoryOutlined />}>
+            Transaction History
+          </Button>
+        </Link>
+      </div>
       <Table
-        dataSource={stockData}
+        dataSource={filteredStocks}
+        //dataSource={stocks}
         columns={columns}
-        pagination={false}
-        style={{ width: '100%', overflowX: 'auto' }} // Makes the table responsive
+        style={{ width: '100%', overflowX: 'auto' }}
+        pagination={{ pageSize: 10 }}
       />
     </div>
   );

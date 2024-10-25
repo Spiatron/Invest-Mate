@@ -65,11 +65,11 @@ const AdminLoginForm = () => {
             if (response.ok) {
                 const { token, userData } = result;
                 localStorage.setItem("token", token);
-                localStorage.setItem("adminName", userData.username);
-                localStorage.setItem("adminRole", userData.userRole);
+                localStorage.setItem("Name", userData.username);
+                localStorage.setItem("Role", userData.userRole);
                 localStorage.setItem("adminObjectID", userData.userObjectID);
                 console.log(result);
-                navigate("/admin");  // Redirect to the homepage
+                navigate("/");  // Redirect to the homepage
             } else {
                 message.error(result.error);
                 setIsOTPSent(false);

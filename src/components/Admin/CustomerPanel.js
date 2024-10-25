@@ -17,54 +17,15 @@ const CustomerPanel = () => {
     const [approvalFilter, setApprovalFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [kycDisabled, setKycDisabled] = useState(false); // KYC DropDown disabler after one
+    const [isRemoveModalVisible, setIsRemoveModalVisible] = useState(false); // State for remove modal
+    const [removeForm] = Form.useForm(); // Form instance for remove modal
 
     const pageSize = 10;
 
-    // Fetch users from the API with filters applied
-    // const fetchUsers = async () => {
-    //     try {
-    //         let url = '';
-    
-    //         // Determine which API to hit based on the filters
-    //         if (approvalFilter) {
-    //             // If 'kycStatus' filter is applied, use the 'getUsersByKYC' endpoint
-    //             url = `${process.env.REACT_APP_API_URL}/api/v1/admin/getUsersByKYC?kycStatus=${approvalFilter}`;
-    //         } else if (statusFilter) {
-    //             // If 'status' filter is applied, use the 'getUsersByStatus' endpoint
-    //             url = `${process.env.REACT_APP_API_URL}/api/v1/admin/getUsersByStatus?status=${statusFilter}`;
-    //         } else {
-    //             // If no filters are applied, default to fetching pending users from 'getUsersByKYC'
-    //             url = `${process.env.REACT_APP_API_URL}/api/v1/admin/getUsersByKYC`;
-    //         }
-    
-    //         // If there is search text, append it to the URL
-    //         if (searchText) {
-    //             const searchParam = `search=${encodeURIComponent(searchText)}`;
-    //             url += url.includes('?') ? `&${searchParam}` : `?${searchParam}`;
-    //         }
-    
-    //         console.log('Fetching URL:', url); // Debugging to check the constructed URL
-    
-    //         const response = await fetch(url, { method: 'GET' ,
-    //         headers: {
-    //             'Content-Type': 'application/json',
-    //             "token": localStorage.getItem('token')
-    //         },
-    //     });
-    //         const users = await response.json();
-    
-    //         console.log('Fetched users:', users);
-    //         setData(users);  // Update the state with the fetched users
-    
-    //     } catch (error) {
-    //         console.error('Error fetching users:', error);
-    //     }
-    // };
-    
     const fetchUsers = async () => {
         try {
             let url = '';
-    
+
             // Determine which API to hit based on the filters
             if (approvalFilter) {
                 url = `${process.env.REACT_APP_API_URL}/api/v1/admin/getUsersByKYC?kycStatus=${approvalFilter}`;
@@ -73,14 +34,14 @@ const CustomerPanel = () => {
             } else {
                 url = `${process.env.REACT_APP_API_URL}/api/v1/admin/getUsersByKYC`;
             }
-    
+
             if (searchText) {
                 const searchParam = `search=${encodeURIComponent(searchText)}`;
                 url += url.includes('?') ? `&${searchParam}` : `?${searchParam}`;
             }
-    
+
             console.log('Fetching URL:', url); // Debugging
-    
+
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
@@ -88,31 +49,31 @@ const CustomerPanel = () => {
                     "token": localStorage.getItem('token')
                 },
             });
-            
+
             // Check if the response is ok (HTTP status code in the range 200-299)
             if (!response.ok) {
                 const errorData = await response.json();
                 console.error('API Error:', errorData.error); // Print the specific error from the response
                 throw new Error(errorData.error || 'Failed to fetch users');
             }
-    
+
             const users = await response.json();
-    
+
             console.log('Fetched users:', users);
-            
+
             // Check if users is an array before setting the state
             if (Array.isArray(users)) {
                 setData(users);  // Update state with fetched users
             } else {
                 throw new Error('Expected an array of users');
             }
-    
+
         } catch (error) {
             console.error('Error fetching users:', error);
             message.error(error.message || 'Error fetching users');
         }
     };
-    
+
 
 
     // Fetch users whenever filters or search text change
@@ -133,10 +94,55 @@ const CustomerPanel = () => {
         setDetailsModalVisible(true);
     };
 
-    // Handle Delete User
-    const handleDeleteUser = (id) => {
-        setData(data.filter(user => user._id !== id));
+    // Show Remove Modal
+    const showRemoveModal = (user) => {
+        setEditingUser(user); // Set the user to be removed
+        setIsRemoveModalVisible(true);
     };
+
+
+// Handle Remove User
+const handleRemoveUser = async () => {
+    const enteredUsername = removeForm.getFieldValue('username');
+    
+    if (enteredUsername === editingUser.username) {
+        try {
+            // Fetch request to remove user using the Aadhaar number
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/admin/removeUser`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'token': localStorage.getItem('token'),  // Send token for authentication
+                },
+                body: JSON.stringify({ aadhaar: editingUser.aadhaar })  // Send the Aadhaar number in the body
+            });
+
+            // Handle the response
+            if (!response.ok) {
+                const errorData = await response.json();
+                message.error(errorData.message || 'Failed to remove user');
+                return;
+            }
+
+            // Success: Update UI and close modal
+            const result = await response.json();
+            message.success(result.message || `${enteredUsername} has been removed successfully.`);
+            
+            // Update the table data by removing the user from the state
+            setData(data.filter(user => user.username !== enteredUsername));
+            
+            // Close the modal and reset the form
+            setIsRemoveModalVisible(false);
+            removeForm.resetFields();
+
+        } catch (error) {
+            console.error('Error removing user:', error);
+            message.error('Error removing user');
+        }
+    } else {
+        message.error('Username does not match!');
+    }
+};
 
     // Table Columns
     const columns = [
@@ -191,7 +197,7 @@ const CustomerPanel = () => {
             render: (text, record) => (
                 <>
                     <Button type="link" onClick={() => showModal(record)}>Edit</Button>
-                    <Button type="link" danger onClick={() => handleDeleteUser(record._id)}>Remove</Button>
+                    <Button type="link" danger onClick={() => showRemoveModal(record)}>Remove</Button>
                     <Button type="link" onClick={() => showDetailsModal(record)}>Details</Button>
                 </>
             ),
@@ -391,6 +397,34 @@ const CustomerPanel = () => {
                     </Descriptions>
                 )}
             </Modal>
+
+            {/* Remove Confirmation Modal */}
+            <Modal
+                visible={isRemoveModalVisible}
+                onCancel={() => {
+                    setIsRemoveModalVisible(false);
+                    removeForm.resetFields(); // Reset the form when the modal is closed
+                }}
+                title="Confirm Removal"
+                width={600}
+                okText="Remove"
+                onOk={handleRemoveUser}
+            >
+                <Form form={removeForm}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <p style={{ fontSize: '15px' }}>
+                            To confirm, type "<strong style={{ color: "#ff0000" }}>{editingUser?.username}</strong>" in the box below. This action cannot be undone.
+                        </p>
+                    </div>
+                    <Form.Item
+                        name="username"
+                        rules={[{ required: true, message: 'Please enter the username' }]}
+                    >
+                        <Input placeholder={"Enter Username to Confirm"} />
+                    </Form.Item>
+                </Form>
+            </Modal>
+
         </div>
     );
 };

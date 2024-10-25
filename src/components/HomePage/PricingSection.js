@@ -1,7 +1,6 @@
 import React from 'react';
-import { Row, Col, Typography } from 'antd';
+import { Row, Col, Card, Typography } from 'antd';
 
-// Destructure Ant Design components
 const { Title, Text, Link } = Typography;
 
 const PricingSection = () => {
@@ -22,7 +21,7 @@ const PricingSection = () => {
   };
 
   const linkStyle = {
-    fontSize: '1rem',
+    fontSize: '1.2rem',
     color: '#ff0000',
     display: 'block',
     marginTop: '10px',
@@ -31,36 +30,36 @@ const PricingSection = () => {
   return (
     <div style={sectionStyle}>
       <Row gutter={[24, 24]} justify="center" align="middle">
-        {/* Left section: Heading, description, and link */}
         <Col xs={24} sm={24} md={12}>
-          <Title level={2} style={{ textAlign: 'left' }}>Unbeatable pricing</Title>
-          <Text style={{ display: 'block', textAlign: 'left', marginBottom: '10px' }}>
-            We pioneered the concept of discount broking and price transparency in India. 
-            Flat fees and no hidden charges.
+          <Title level={2} style={{ fontSize: '32px', fontWeight: 700, color: '#1f1f1f', textAlign: 'left' }}>
+            Unbeatable pricing
+          </Title>
+          <Text style={{ fontSize: '20px', display: 'block', textAlign: 'left', marginBottom: '10px' }}>
+            We pioneered the concept of discount broking and price transparency in India. Flat fees and no hidden charges.
           </Text>
           <Link href="/pricing" style={linkStyle}>
             See pricing &rarr;
           </Link>
         </Col>
 
-        {/* Right section: Numbers and their descriptions */}
         <Col xs={24} sm={24} md={12}>
           <Row gutter={[24, 24]}>
-            <Col span={8}>
-              <Text style={highlightStyle}>₹ 0</Text>
-              <br />
-              <Text style={labelStyle}>Free account opening</Text>
-            </Col>
-            <Col span={8}>
-              <Text style={highlightStyle}>₹ 0</Text>
-              <br />
-              <Text style={labelStyle}>Free equity delivery and direct mutual funds</Text>
-            </Col>
-            <Col span={8}>
-              <Text style={highlightStyle}>₹ 20</Text>
-              <br />
-              <Text style={labelStyle}>Intraday and F&O</Text>
-            </Col>
+            {[
+              { price: '₹ 0', description: 'Free account opening' },
+              { price: '₹ 0', description: 'Free equity delivery & direct mutual funds' },
+              { price: '₹ 20', description: 'Intraday and F&O' },
+            ].map((item, index) => (
+              <Col key={index} span={8} xs={24} sm={12} lg={8}>
+                <Card
+                  hoverable
+                  style={{ textAlign: 'center', padding: '20px', borderRadius: '10px', height: '220px',}} // Set a fixed height
+                >
+                  <Text style={highlightStyle}>{item.price}</Text>
+                  <br />
+                  <Text style={labelStyle}>{item.description}</Text>
+                </Card>
+              </Col>
+            ))}
           </Row>
         </Col>
       </Row>

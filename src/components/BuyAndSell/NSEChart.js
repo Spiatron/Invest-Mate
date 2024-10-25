@@ -79,52 +79,52 @@ const NSEChart = () => {
   }, []);
 
   // WebSocket connection to receive live data and update chart
-  useEffect(() => {
-    const ws = new WebSocket('ws://localhost:8080');
+  // useEffect(() => {
+  //   const ws = new WebSocket('ws://localhost:8080');
 
-    ws.onopen = () => {
-      console.log('Connected to WebSocket');
-    };
+  //   ws.onopen = () => {
+  //    // console.log('Connected to WebSocket');
+  //   };
 
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
+  //   ws.onmessage = (event) => {
+  //     try {
+  //       const data = JSON.parse(event.data);
 
-        // Validate the received data
-        if (data && typeof data.value === 'number' && typeof data.time === 'number') {
-          const newEntry = { time: data.time, value: data.value };
+  //       // Validate the received data
+  //       if (data && typeof data.value === 'number' && typeof data.time === 'number') {
+  //         const newEntry = { time: data.time, value: data.value };
 
-          if (areaSeries) {
-            const updatedData = [...chartData, newEntry]; // Add new data point to chartData
+  //         if (areaSeries) {
+  //           const updatedData = [...chartData, newEntry]; // Add new data point to chartData
 
-            areaSeries.update(newEntry); // Update the chart with the new data point
-            setChartData(updatedData); // Update the chartData state
+  //           areaSeries.update(newEntry); // Update the chart with the new data point
+  //           setChartData(updatedData); // Update the chartData state
 
-            // Update today's high and low values based on the received data
-            if (data.value > todaysHigh) {
-              setTodaysHigh(data.value); // Update today's high if the new value is higher
-            }
-            if (data.value < todaysLow || todaysLow === 0) {
-              setTodaysLow(data.value); // Update today's low if the new value is lower or if it's the first value
-            }
+  //           // Update today's high and low values based on the received data
+  //           if (data.value > todaysHigh) {
+  //             setTodaysHigh(data.value); // Update today's high if the new value is higher
+  //           }
+  //           if (data.value < todaysLow || todaysLow === 0) {
+  //             setTodaysLow(data.value); // Update today's low if the new value is lower or if it's the first value
+  //           }
 
-            // Save the updated chartData to localStorage
-            localStorage.setItem('chartData', JSON.stringify(updatedData));
-          }
-        } else {
-          console.error('Invalid data received:', data);
-        }
-      } catch (error) {
-        console.error('Error processing WebSocket message:', error);
-      }
-    };
+  //           // Save the updated chartData to localStorage
+  //           localStorage.setItem('chartData', JSON.stringify(updatedData));
+  //         }
+  //       } else {
+  //       //  console.error('Invalid data received:', data);
+  //       }
+  //     } catch (error) {
+  //      // console.error('Error processing WebSocket message:', error);
+  //     }
+  //   };
 
-    ws.onclose = () => {
-      console.log('WebSocket connection closed');
-    };
+  //   ws.onclose = () => {
+  //   //  console.log('WebSocket connection closed');
+  //   };
 
-    return () => ws.close();
-  }, [areaSeries, chartData, todaysHigh, todaysLow]);
+  //   return () => ws.close();
+  // }, [areaSeries, chartData, todaysHigh, todaysLow]);
 
   return (
     <Layout>

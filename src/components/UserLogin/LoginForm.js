@@ -14,12 +14,20 @@ const LoginForm = () => {
 
     // Custom validator for userID (capital letters alphanumeric)
     const validateUserID = (_, value) => {
-        const userIDPattern = /^[A-Z0-9]{5,}$/;
-        if (!value || userIDPattern.test(value)) {
-            return Promise.resolve();
+        if (!value) {
+            return Promise.reject(new Error('Please input your User ID!'));
         }
-        return Promise.reject(new Error("Please enter a valid User ID (alphanumeric, uppercase)."));
+
+        // Regex to check if the user ID starts with uppercase letters followed by digits
+        const isValidUserID = /^[A-Z]+\d*$/.test(value);
+
+        if (!isValidUserID) {
+            return Promise.reject(new Error('User ID must start with capital letters followed by numbers!'));
+        }
+
+        return Promise.resolve();
     };
+
 
     // Custom validator for password (at least 8 characters long)
     const validatePassword = (_, value) => {
@@ -85,15 +93,15 @@ const LoginForm = () => {
                 console.log(result.message);
                 const { token, userData } = result;
                 navigate("/");  // Redirect to the homepage
-            if (token) {
+                if (token) {
                     localStorage.setItem("token", token);
-                    localStorage.setItem("username", userData.username);
-                    localStorage.setItem("User-Role", userData.userRole);
+                    localStorage.setItem("Name", userData.username);
+                    localStorage.setItem("Role", userData.userRole);
                     localStorage.setItem("UserID", userData.userObjectID);
                     localStorage.setItem("UserZID", userData.userZID);
                     localStorage.setItem("ProfilePic", userData.profilePic);
                     console.log(result);
-                } else{
+                } else {
                     message.error("Login failed. Token is missing.");
                     console.error("Login failed. Token is missing.");
                 }
@@ -134,7 +142,7 @@ const LoginForm = () => {
                         <Form.Item
                             name="userID"
                             rules={[
-                                { required: true, message: 'Please input your User ID!' },
+                                //  { required: true, message: 'Please input your User ID!' },
                                 { validator: validateUserID } // Custom User ID validation rule
                             ]}
                         >

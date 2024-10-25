@@ -171,6 +171,75 @@ const PricingTable = () => {
         },
     ];
 
+
+    // Columns for F&O
+    const commodityColumns = [
+        {
+            title: 'Category', dataIndex: 'category', key: 'category', onHeaderCell: () => ({
+                style: { fontSize: '16px', fontWeight: 'bold' },
+            }),
+            onCell: () => ({
+                style: { fontSize: '16px' },
+            }),
+        },
+        {
+            title: 'Futures', dataIndex: 'futures', key: 'futures', onHeaderCell: () => ({
+                style: { fontSize: '16px', fontWeight: 'bold' },
+            }),
+            onCell: () => ({
+                style: { fontSize: '16px' },
+            }),
+        },
+        {
+            title: 'Options', dataIndex: 'options', key: 'options', onHeaderCell: () => ({
+                style: { fontSize: '16px', fontWeight: 'bold' },
+            }),
+            onCell: () => ({
+                style: { fontSize: '16px' },
+            }),
+        },
+    ];
+
+    // Data for F&O
+    const commodityData = [
+        {
+            key: '1',
+            category: 'Brokerage',
+            futures: '0.03% or Rs. 20/executed order whichever is lower',
+            options: 'Flat Rs. 20 per executed order',
+        },
+        {
+            key: '2',
+            category: 'STT/CTT',
+            futures: '0.01% on sell side',
+            options: '0.05% on sell side (on premium)',
+        },
+        {
+            key: '3',
+            category: 'Transaction Charges',
+            futures: 'MCX: 0.0026%',
+            options: 'MCX: 0.05% (on premium)',
+        },
+        {
+            key: '4',
+            category: 'GST',
+            futures: '18% on (brokerage + SEBI charges + transaction charges)',
+            options: '18% on (brokerage + SEBI charges + transaction charges)',
+        },
+        {
+            key: '5',
+            category: 'SEBI Charges',
+            futures: '₹10 / crore',
+            options: '₹10 / crore',
+        },
+        {
+            key: '6',
+            category: 'Stamp Charges',
+            futures: '₹200 / crore on buy side',
+            options: '₹300 / crore on buy side',
+        },
+    ];
+
     return (
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px' }}>
             <h1 style={{ fontSize: '60px', textAlign: 'center', marginBottom: '20px' }}>Pricing Table</h1>
@@ -184,6 +253,11 @@ const PricingTable = () => {
                 {/* Currency Tab */}
                 <TabPane tab={<span style={{ fontSize: '24px' }}>Currency</span>} key="currency">
                     <Table columns={currencyColumns} dataSource={currencyData} pagination={false} />
+                </TabPane>
+
+                {/* F&O Tab */}
+                <TabPane tab={<span style={{ fontSize: '24px' }}>F&O</span>} key="F&O">
+                    <Table columns={commodityColumns} dataSource={commodityData} pagination={false} />
                 </TabPane>
 
             </Tabs>

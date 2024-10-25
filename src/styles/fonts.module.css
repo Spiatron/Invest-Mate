@@ -1,0 +1,20 @@
+/* styles/fonts.css */
+
+/*To import this*/
+
+/* import '../styles/fonts.module.css'; 
+style={{ fontFamily: "angrybird" }}
+*/
+@font-face {
+    font-family: 'Bantayog';
+    src: url('/public/fonts/Bantayog-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+  }
+/*   
+  @font-face {
+    font-family: 'Kufi';
+    src: url('/fonts/Reem Kufi Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  } */

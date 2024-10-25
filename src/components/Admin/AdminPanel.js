@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Input, Pagination, Typography, Select, Row, Col, message } from 'antd';
 import { Country, State, City } from 'country-state-city';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -10,15 +11,81 @@ const AdminPanel = () => {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedCountry, setSelectedCountry] = useState('IN');
-    const [selectedState, setSelectedState] = useState('');    
+    const [selectedState, setSelectedState] = useState('');
+    const [isRemoveModalVisible, setIsRemoveModalVisible] = useState(false); // Modal for remove action
+    const [selectedRecord, setSelectedRecord] = useState(null); // Selected record to remove
+
 
     const [form] = Form.useForm(); // Create form instance
+    const [removeForm] = Form.useForm(); // Form instance for Remove Moderator
 
     const pageSize = 10;
 
     const showModal = () => {
         setIsModalVisible(true);
     };
+
+    const showRemoveModal = (record) => {
+        setSelectedRecord(record); // Set selected record for deletion
+        setIsRemoveModalVisible(true);
+    };
+
+    // Function to remove user if username matches
+    // const handleRemoveUser = () => {
+    //     const enteredUsername = removeForm.getFieldValue('username');
+    //     if (enteredUsername === selectedRecord.username) {
+    //         // Remove user logic
+    //         setData(data.filter(item => item.username !== enteredUsername));
+    //         message.success(`${enteredUsername} has been removed.`);
+    //         setIsRemoveModalVisible(false);
+    //         removeForm.resetFields();
+    //     } else {
+    //         message.error('Username does not match!');
+    //     }
+    // };
+
+// Function to remove user if username matches
+const handleRemoveUser = async () => {
+    const enteredUsername = removeForm.getFieldValue('username');
+    if (enteredUsername === selectedRecord.username) {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                message.error("Token not found");
+                console.error("Token not found");
+                return;
+            }
+
+            // Send the request to remove the moderator using aadhaar
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/admin/removeModerator`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    "token": token,
+                },
+                body: JSON.stringify({ aadhaar: selectedRecord.aadhaar }), // Send the aadhaar in the request body
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                message.success(result.message);
+                // Remove the moderator from the table
+                setData(data.filter(item => item.aadhaar !== selectedRecord.aadhaar));
+                setIsRemoveModalVisible(false);
+                removeForm.resetFields();
+            } else {
+                message.error(result.message || 'Failed to remove moderator');
+            }
+        } catch (error) {
+            console.error('Error occurred while removing the moderator:', error);
+            message.error('Error removing moderator');
+        }
+    } else {
+        message.error('Username does not match!');
+    }
+};
+
 
     useEffect(() => {
         const fetchModerators = async () => {
@@ -35,7 +102,7 @@ const AdminPanel = () => {
                         "token": token,
                     },
                 });
-                
+
                 if (response.ok) {
                     const result = await response.json();
                     const formattedData = result.map((item, index) => ({
@@ -61,12 +128,6 @@ const AdminPanel = () => {
 
         fetchModerators();
     }, []);
-
-    // const handleSaveUser = async (values) => {
-    //     setData([...data, { ...values, key: data.length }]);
-    //     setIsModalVisible(false);
-    //     form.resetFields(); // Reset form fields after saving
-    // };
 
     const columns = [
         {
@@ -122,9 +183,9 @@ const AdminPanel = () => {
             align: 'center',
             key: 'actions',
             render: (text, record) => (
-                <span>
-                    <Button type="link" danger>Remove</Button>
-                </span>
+                <Button type="link" danger onClick={() => showRemoveModal(record)}>
+                    Remove
+                </Button>
             ),
         },
     ];
@@ -145,16 +206,16 @@ const AdminPanel = () => {
 
     const token = localStorage.getItem('token');
     if (!token) {
-      message.error("Token not found");
-      console.error("Token not found");
-      return;
+        message.error("Token not found");
+        console.error("Token not found");
+        return;
     }
 
     const handleSaveUser = async (values) => {
-    // Get full state name from the selected state ISO code
-    const stateName = State.getStatesOfCountry(selectedCountry).find(
-        (state) => state.isoCode === values.state
-    )?.name;
+        // Get full state name from the selected state ISO code
+        const stateName = State.getStatesOfCountry(selectedCountry).find(
+            (state) => state.isoCode === values.state
+        )?.name;
 
         const payload = {
             username: values.username,
@@ -171,7 +232,7 @@ const AdminPanel = () => {
             pan: values.pan,
         };
         console.log(payload);
-    
+
         try {
             const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/admin/addAdmin`, {
                 method: 'POST',
@@ -181,9 +242,9 @@ const AdminPanel = () => {
                 },
                 body: JSON.stringify(payload),
             });
-    
+
             const data = await response.json();
-    
+
             if (response.ok) {
                 // Success block
                 message.success(data.message); // Display success message
@@ -193,14 +254,14 @@ const AdminPanel = () => {
                 // Error block (handling specific API errors)
                 message.error(`Error: ${data.error || 'Unknown error'}`, 5); // Display error message from the API
             }
-    
+
         } catch (error) {
             // Catch block for network or unexpected errors
             console.error('Error occurred:', error);
             message.error(`Error: ${error.message}`, 5); // Display error message for 5 seconds
         }
     };
-    
+
 
 
     return (
@@ -223,6 +284,33 @@ const AdminPanel = () => {
                 onChange={handlePageChange}
                 style={paginationStyle}
             />
+
+            {/* Remove Moderator Modal */}
+            <Modal
+                visible={isRemoveModalVisible}
+                onCancel={() => {
+                setIsRemoveModalVisible(false);
+                removeForm.resetFields(); // Reset the form when the modal is closed
+                }}
+                onOk={handleRemoveUser}
+                okText="Remove"
+                title="Confirm Removal"
+                width={600}
+            >
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    {/* <ExclamationCircleOutlined style={{ fontSize: '20px', color: '#ff0000', marginRight: '10px' }} /> */}
+                    <p style={{ fontSize: '15px' }}>To confirm, type "<strong style={{ color: "#ff0000" }}>{selectedRecord?.username}</strong>" in the box below. This action cannot be undone.</p>
+                </div>
+                <Form form={removeForm}>
+                    <Form.Item
+                        name="username"
+                        rules={[{ required: true, message: 'Please enter the username' }]}
+                    >
+                        <Input placeholder={"Enter Username to Confirm"} />
+                    </Form.Item>
+                </Form>
+            </Modal>
+
 
             <Modal
                 visible={isModalVisible}
