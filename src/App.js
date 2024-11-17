@@ -20,12 +20,13 @@ import { UsernameProvider } from './components/UserLogin/UsernameContext'
 import ForgetPassword from './components/UserLogin/ForgetPassword';
 import CustomerPanel from './components/Admin/CustomerPanel';
 import BuyAndSell from './components/BuyAndSell/BuyAndSell';
-//import Graph from './components/Graph'
 import StockCharts from './components/BuyAndSell/StockCharts';
 import LiveData from './components/LiveData';
 import AdminLoginForm from './components/Admin/AdminLoginForm';
 import AdminForgetPassword from './components/Admin/AdminForgetPassword';
 import TransactionHistory from './components/BuyAndSell/TransactionHistory';
+import TransactionPanel from './components/Transaction/TransactionPanel';
+import UnauthorizedPage from './components/Unauthorized/UnauthorizedPage';
 
 function App() {
   return (
@@ -61,6 +62,8 @@ function App() {
             <Route path="/adminLogin" element={<AdminLoginForm />} />
             <Route path="/adminForgetpassword" element={<AdminForgetPassword />} />
             <Route path="/TransactionHistory" element={<TransactionHistory />} />
+            <Route path="/TransactionPanel" element={<TransactionPanel />} />
+            <Route path="/error403" element={<UnauthorizedPage />} />
             {/* Add other routes as necessary */}
           </Routes>
         </Layout>

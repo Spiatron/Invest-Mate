@@ -2,15 +2,13 @@ import React from 'react';
 
 const Logo = () => {
   return (
-<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <svg
-        id="Layer_1"
-        data-name="Layer 1"
         xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 975.79 1080"
-        width="150" // Set your desired width here
-        height="80" // Set your desired height here
-        style={{ width: '150px', height: '80px', marginTop:"6px" }} // You can adjust these values as needed
+        viewBox="0 0 975.79 970" // Reset viewBox to fit the entire SVG
+        width="80" // Adjust width as needed
+        height="80" // Adjust height as needed for balance
+        style={{ margin: "0", padding: "0" }}
       >
         <polygon
           points="975.78 101.42 859.12 827.37 623.42 827.37 718.88 238.12 975.78 101.42"
@@ -34,7 +32,6 @@ const Logo = () => {
         />
       </svg>
     </div>
-
   );
 };
 

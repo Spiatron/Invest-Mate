@@ -1,53 +1,64 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, Table } from 'antd';
 
 const { TabPane } = Tabs;
 
 const PricingTable = () => {
     const [activeTab, setActiveTab] = useState('equity');
+    const [isMobile, setIsMobile] = useState(false);
 
+    // Check screen size
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768); // Adjust based on your mobile breakpoint
+        };
+
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // Equity columns (only the first three for mobile)
     const equityColumns = [
         {
-            title: 'Category', dataIndex: 'category', key: 'category', onHeaderCell: () => ({
-                style: { fontSize: '16px', fontWeight: 'bold' }, // Heading font size
-            }),
-            onCell: () => ({
-                style: { fontSize: '16px' }, // Data font size
-            }),
+            title: 'Category',
+            dataIndex: 'category',
+            key: 'category',
+            onHeaderCell: () => ({ style: { fontSize: '16px', fontWeight: 'bold' } }),
+            onCell: () => ({ style: { fontSize: '16px' } }),
         },
         {
-            title: 'Equity Delivery', dataIndex: 'delivery', key: 'delivery', onHeaderCell: () => ({
-                style: { fontSize: '16px', fontWeight: 'bold' }, // Heading font size
-            }),
-            onCell: () => ({
-                style: { fontSize: '16px' }, // Data font size
-            }),
+            title: 'Equity Delivery',
+            dataIndex: 'delivery',
+            key: 'delivery',
+            onHeaderCell: () => ({ style: { fontSize: '16px', fontWeight: 'bold' } }),
+            onCell: () => ({ style: { fontSize: '16px' } }),
         },
         {
-            title: 'Equity Intraday', dataIndex: 'intraday', key: 'intraday', onHeaderCell: () => ({
-                style: { fontSize: '16px', fontWeight: 'bold' }, // Heading font size
-            }),
-            onCell: () => ({
-                style: { fontSize: '16px' }, // Data font size
-            }),
+            title: 'Equity Intraday',
+            dataIndex: 'intraday',
+            key: 'intraday',
+            onHeaderCell: () => ({ style: { fontSize: '16px', fontWeight: 'bold' } }),
+            onCell: () => ({ style: { fontSize: '16px' } }),
         },
         {
-            title: 'F&O - Futures', dataIndex: 'futures', key: 'futures', onHeaderCell: () => ({
-                style: { fontSize: '16px', fontWeight: 'bold' }, // Heading font size
-            }),
-            onCell: () => ({
-                style: { fontSize: '16px' }, // Data font size
-            }),
+            title: 'F&O - Futures',
+            dataIndex: 'futures',
+            key: 'futures',
+            onHeaderCell: () => ({ style: { fontSize: '16px', fontWeight: 'bold' } }),
+            onCell: () => ({ style: { fontSize: '16px' } }),
         },
         {
-            title: 'F&O - Options', dataIndex: 'options', key: 'options', onHeaderCell: () => ({
-                style: { fontSize: '16px', fontWeight: 'bold' }, // Heading font size
-            }),
-            onCell: () => ({
-                style: { fontSize: '16px' }, // Data font size
-            }),
+            title: 'F&O - Options',
+            dataIndex: 'options',
+            key: 'options',
+            onHeaderCell: () => ({ style: { fontSize: '16px', fontWeight: 'bold' } }),
+            onCell: () => ({ style: { fontSize: '16px' } }),
         },
     ];
+
+    // Display only first three columns for mobile
+    const displayedEquityColumns = isMobile ? equityColumns.slice(0, 3) : equityColumns;
 
     const equityData = [
         {
@@ -247,7 +258,7 @@ const PricingTable = () => {
 
                 {/* Equity Tab */}
                 <TabPane tab={<span style={{ fontSize: '24px' }}>Equity</span>} key="equity">
-                    <Table columns={equityColumns} dataSource={equityData} pagination={false} />
+                    <Table columns={displayedEquityColumns} dataSource={equityData} pagination={false} />
                 </TabPane>
 
                 {/* Currency Tab */}

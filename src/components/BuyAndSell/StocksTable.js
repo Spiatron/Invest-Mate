@@ -2,27 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Table, InputNumber, Button, message, Input } from 'antd';
 import { PlusOutlined, MinusOutlined, HistoryOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom'; 
-import { Modal } from 'antd';
+import Swal from 'sweetalert2';
 
 const StocksTable = ({ stockData }) => {
-  // Manage the stock data with quantities
-  const [stocks, setStocks] = useState([]);
+  const [stocks, setStocks] = useState([]);   // Manage the stock data with quantities
   const [searchTerm, setSearchTerm] = useState(''); // State for the search term
 
-
-  // Update stock data when receiving new data from props (OLD)
-  // useEffect(() => {
-  //   if (stockData.length) {
-  //     // Initialize quantities if not already set
-  //     const updatedStocks = stockData.map((stock) => ({
-  //       ...stock,
-  //       quantity: stock.quantity || 1, // Set default quantity to 1
-  //     }));
-  //     setStocks(updatedStocks);
-  //   }
-  // }, [stockData]);
-
-  // Update stock data when receiving new data from props
   useEffect(() => {
     if (stockData.length) {
       // Merge the new stock data with the existing quantities
@@ -134,20 +119,26 @@ const StocksTable = ({ stockData }) => {
 const handleBuy = async (stock, key, quantity, price) => {
   const totalPrice = price * quantity;
 
-  Modal.confirm({
+   // SweetAlert2 confirmation dialog
+  const { value: confirmed } = await Swal.fire({
     title: 'Confirm Purchase',
-    content: `Are you sure you want to purchase ${quantity} share of ${stock} for a total amount of ₹${totalPrice}?`,
-    okText: 'Yes',
-    cancelText: 'No',
-    onOk: async () => {
-      const transactionData = {
-        stockName: stock,
-        pricePerUnit: price,
-        stockQuantity: quantity,
-        totalAmount: totalPrice,
-        transactionType: 'buy', // Add action type
-      };
-      console.log(`Payload of buy ${transactionData}`);
+    text: `Are you sure you want to purchase ${quantity} share${quantity > 1 ? 's' : ''} of ${stock} for a total amount of ₹${totalPrice}?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes',
+    cancelButtonText: 'No',
+    confirmButtonColor:"#ff0000",
+  });
+
+  if (confirmed) {
+    const transactionData = {
+      stockName: stock,
+      pricePerUnit: price,
+      stockQuantity: quantity,
+      totalAmount: totalPrice,
+      transactionType: 'buy', // Add action type
+    };
+    console.log(`Payload of buy ${transactionData}`);
 
       try {
         const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/stocks/registerTransaction/buy`, {
@@ -160,7 +151,13 @@ const handleBuy = async (stock, key, quantity, price) => {
         });
 
         if (response.ok) {
-          message.success(`You have bought ${quantity} shares of ${stock} for ₹${totalPrice}`);
+          Swal.fire({
+            title: 'Success!',
+            text: `You have successfully purchased ${quantity} share${quantity > 1 ? 's' : ''} of ${stock} for a total of ₹${totalPrice}.`,
+            icon: 'success',
+            timer: 2000, // Automatically close after 3 seconds
+            showConfirmButton: false,
+          });
         } else {
           message.error('Failed to process the buy request.');
         }
@@ -169,49 +166,59 @@ const handleBuy = async (stock, key, quantity, price) => {
         console.error('Buy transaction error:', error);
       }
     }
-  });
 };
 
   // Handle sell action
 const handleSell = async (stock, key, quantity, price) => {
   const totalPrice = price * quantity;
 
-  Modal.confirm({
-    title: 'Confirm Sale',
-    content: `Are you sure you want to sell ${quantity} share of ${stock} for a total amount of ₹${totalPrice}?`,
-    okText: 'Yes',
-    cancelText: 'No',
-    onOk: async () => {
-      const transactionData = {
-        stockName: stock,
-        pricePerUnit: price,
-        stockQuantity: quantity,
-        totalAmount: totalPrice,
-        transactionType: 'sell', // Add action type
-      };
-      console.log(`Payload of sell ${transactionData}`);
-
-      try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/stocks/registerTransaction/sell`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'token': token, // Included token for authentication
-          },
-          body: JSON.stringify(transactionData),
-        });
-
-        if (response.ok) {
-          message.success(`You have sold ${quantity} shares of ${stock} for ₹${totalPrice}`);
-        } else {
-          message.error('Failed to process the sell request.');
-        }
-      } catch (error) {
-        message.error('An error occurred while processing the sell request.');
-        console.error('Sell transaction error:', error);
-      }
-    }
+  // SweetAlert2 confirmation dialog
+  const { value: confirmed } = await Swal.fire({
+    title: 'Confirm Sell',
+    text: `Are you sure you want to sell ${quantity} share${quantity > 1 ? 's' : ''} of ${stock} for a total amount of ₹${totalPrice}?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes',
+    cancelButtonText: 'No',
+    confirmButtonColor:"#ff0000",
   });
+
+  if (confirmed) {
+    const transactionData = {
+      stockName: stock,
+      pricePerUnit: price,
+      stockQuantity: quantity,
+      totalAmount: totalPrice,
+      transactionType: 'sell', // Add action type
+    };
+    console.log(`Payload of sell ${transactionData}`);
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/stocks/registerTransaction/sell`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'token': token, // Included token for authentication
+        },
+        body: JSON.stringify(transactionData),
+      });
+
+      if (response.ok) {
+        Swal.fire({
+          title: 'Success!',
+          text: `You have successfully sold ${quantity} share${quantity > 1 ? 's' : ''} of ${stock} for a total of ₹${totalPrice}.`,
+          icon: 'success',
+          timer: 2000, // Automatically close after 3 seconds
+          showConfirmButton: false,
+        });
+      } else {
+        message.error('Failed to process the sell request.');
+      }
+    } catch (error) {
+      message.error('An error occurred while processing the sell request.');
+      console.error('Sell transaction error:', error);
+    }
+  }
 };
 
   // Filter stocks based on search term
@@ -239,7 +246,6 @@ const handleSell = async (stock, key, quantity, price) => {
       </div>
       <Table
         dataSource={filteredStocks}
-        //dataSource={stocks}
         columns={columns}
         style={{ width: '100%', overflowX: 'auto' }}
         pagination={{ pageSize: 10 }}

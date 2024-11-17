@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Form, Input, Button, Typography, message } from 'antd';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
-import Cookies from 'js-cookie';
+import Swal from 'sweetalert2';
 
 const { Title, Text } = Typography;
 
@@ -11,14 +11,6 @@ const AdminLoginForm = () => {
     const [otp, setOtp] = useState("");
     const navigate = useNavigate();
     const [form] = Form.useForm();  // Ant Design form instance
-
-    // const validateUserID = (_, value) => {
-    //     const userIDPattern = /^[A-Z0-9]{5,}$/;
-    //     if (!value || userIDPattern.test(value)) {
-    //         return Promise.resolve();
-    //     }
-    //     return Promise.reject(new Error("Please enter a valid User ID (alphanumeric, uppercase)."));
-    // };
 
     const validatePassword = (_, value) => {
         if (!value || value.length >= 8) {
@@ -68,7 +60,22 @@ const AdminLoginForm = () => {
                 localStorage.setItem("Name", userData.username);
                 localStorage.setItem("Role", userData.userRole);
                 localStorage.setItem("adminObjectID", userData.userObjectID);
+                localStorage.setItem('loginTimestamp', Date.now().toString());
                 console.log(result);
+
+                // Function to capitalize the first letter of a string
+                const capitalizeFirstLetter = (string) => {
+                    return string.charAt(0).toUpperCase() + string.slice(1);
+                };
+                 // SweetAlert2 for success message
+                Swal.fire({
+                    title: `Welcome, ${capitalizeFirstLetter(userData.username)}!`,
+                    text: "You've logged in successfully.",
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false,
+                });
+                
                 navigate("/");  // Redirect to the homepage
             } else {
                 message.error(result.error);

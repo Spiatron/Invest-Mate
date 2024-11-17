@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Modal, Form, Input, Select, Pagination, Typography, Descriptions, Row, Col, message } from 'antd';
-import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { Table, Button, Modal, Form, Input, Select, Pagination, Typography, Descriptions, Row, Col, message, Space, Grid } from 'antd';
+import { ExclamationCircleOutlined, EditOutlined, SearchOutlined } from '@ant-design/icons';
+import { TbListDetails } from "react-icons/tb";
+import { HiOutlineUserRemove } from "react-icons/hi";
+import { FaUsers } from "react-icons/fa";
 
 const { Option } = Select;
 const { Title } = Typography;
 const { confirm: antdConfirm } = Modal; // Rename 'confirm' to 'antdConfirm' to avoid conflicts
 
 const CustomerPanel = () => {
+    const { xs, md, lg } = Grid.useBreakpoint(); // Detects if the screen is extra small (mobile)
     const [data, setData] = useState([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [detailsModalVisible, setDetailsModalVisible] = useState(false);
@@ -101,48 +105,48 @@ const CustomerPanel = () => {
     };
 
 
-// Handle Remove User
-const handleRemoveUser = async () => {
-    const enteredUsername = removeForm.getFieldValue('username');
-    
-    if (enteredUsername === editingUser.username) {
-        try {
-            // Fetch request to remove user using the Aadhaar number
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/admin/removeUser`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'token': localStorage.getItem('token'),  // Send token for authentication
-                },
-                body: JSON.stringify({ aadhaar: editingUser.aadhaar })  // Send the Aadhaar number in the body
-            });
+    // Handle Remove User
+    const handleRemoveUser = async () => {
+        const enteredUsername = removeForm.getFieldValue('username');
 
-            // Handle the response
-            if (!response.ok) {
-                const errorData = await response.json();
-                message.error(errorData.message || 'Failed to remove user');
-                return;
+        if (enteredUsername === editingUser.username) {
+            try {
+                // Fetch request to remove user using the Aadhaar number
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/admin/removeUser`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'token': localStorage.getItem('token'),  // Send token for authentication
+                    },
+                    body: JSON.stringify({ aadhaar: editingUser.aadhaar })  // Send the Aadhaar number in the body
+                });
+
+                // Handle the response
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    message.error(errorData.message || 'Failed to remove user');
+                    return;
+                }
+
+                // Success: Update UI and close modal
+                const result = await response.json();
+                message.success(result.message || `${enteredUsername} has been removed successfully.`);
+
+                // Update the table data by removing the user from the state
+                setData(data.filter(user => user.username !== enteredUsername));
+
+                // Close the modal and reset the form
+                setIsRemoveModalVisible(false);
+                removeForm.resetFields();
+
+            } catch (error) {
+                console.error('Error removing user:', error);
+                message.error('Error removing user');
             }
-
-            // Success: Update UI and close modal
-            const result = await response.json();
-            message.success(result.message || `${enteredUsername} has been removed successfully.`);
-            
-            // Update the table data by removing the user from the state
-            setData(data.filter(user => user.username !== enteredUsername));
-            
-            // Close the modal and reset the form
-            setIsRemoveModalVisible(false);
-            removeForm.resetFields();
-
-        } catch (error) {
-            console.error('Error removing user:', error);
-            message.error('Error removing user');
+        } else {
+            message.error('Username does not match!');
         }
-    } else {
-        message.error('Username does not match!');
-    }
-};
+    };
 
     // Table Columns
     const columns = [
@@ -195,11 +199,11 @@ const handleRemoveUser = async () => {
             key: 'actions',
             align: 'center',
             render: (text, record) => (
-                <>
-                    <Button type="link" onClick={() => showModal(record)}>Edit</Button>
-                    <Button type="link" danger onClick={() => showRemoveModal(record)}>Remove</Button>
-                    <Button type="link" onClick={() => showDetailsModal(record)}>Details</Button>
-                </>
+                <Space>
+                    <Button type="default" icon={<EditOutlined />} onClick={() => showModal(record)}>{lg ? "Edit" : null}</Button> {/* Text will not show on xs and md */}
+                    <Button type="primary" icon={<HiOutlineUserRemove />} onClick={() => showRemoveModal(record)}>{lg ? "Remove" : null}</Button>
+                    <Button type="default" icon={<TbListDetails />} onClick={() => showDetailsModal(record)}>{lg ? "Details" : null}</Button>
+                </Space>
             ),
         },
     ];
@@ -270,40 +274,48 @@ const handleRemoveUser = async () => {
 
     return (
         <div style={containerStyle}>
-            <Title level={2} style={titleStyle}>Admin Customer Management</Title>
+            <Space style={{ marginBottom: '20px', marginTop: '20px', justifyContent: 'center', width: '100%' }}>
+                <FaUsers style={{ fontSize: xs ? '30px' : '40px', color: 'black', marginRight: '10px' }} />
+                <Title level={2} style={{ fontSize: xs ? '25px' : '30px', margin: 0 }}>
+                    Customer Management
+                </Title>
+            </Space>
 
             {/* Search and Filters */}
-            <Row gutter={16}>
+            <Row justify={xs ? "center" : "start"}>
                 <Col>
                     <Input
-                        placeholder="Search by Username, Email, Aadhaar or PAN"
+                        placeholder="Search by Username, Email, Aadhaar, PAN"
                         onChange={(e) => setSearchText(e.target.value)}
-                        style={searchInputStyle}
+                       style={{marginBottom: '10px', width: '300px', marginRight: '10px'}}
+                        prefix={<SearchOutlined />}
                     />
                 </Col>
-                <Col>
-                    <Select
-                        placeholder="Filter by KYC Status"
-                        onChange={(value) => setApprovalFilter(value)}
-                        style={{ width: 200 }}
-                        allowClear
-                    >
-                        <Option value="approved">Approved</Option>
-                        <Option value="rejected">Rejected</Option>
-                        <Option value="pending">Pending</Option>
-                    </Select>
-                </Col>
-                <Col>
-                    <Select
-                        placeholder="Filter by Status"
-                        onChange={(value) => setStatusFilter(value)}
-                        style={{ width: 200 }}
-                        allowClear
-                    >
-                        <Option value="active">Active</Option>
-                        <Option value="frozen">Frozen</Option>
-                    </Select>
-                </Col>
+                <Space style={{ marginBottom: '10px', justifyContent: "center" }}>
+                    <Col>
+                        <Select
+                            placeholder="Filter by KYC Status"
+                            onChange={(value) => setApprovalFilter(value)}
+                            style={{ width: "max-content" }}
+                            allowClear
+                        >
+                            <Option value="approved">Approved</Option>
+                            <Option value="rejected">Rejected</Option>
+                            <Option value="pending">Pending</Option>
+                        </Select>
+                    </Col>
+                    <Col>
+                        <Select
+                            placeholder="Filter by Status"
+                            onChange={(value) => setStatusFilter(value)}
+                            style={{ width: "max-content" }}
+                            allowClear
+                        >
+                            <Option value="active">Active</Option>
+                            <Option value="frozen">Frozen</Option>
+                        </Select>
+                    </Col>
+                </Space>
             </Row>
 
             {/* Table and Pagination */}
@@ -312,6 +324,7 @@ const handleRemoveUser = async () => {
                 dataSource={filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize)}
                 pagination={false}
                 style={tableStyle}
+                scroll={{ x: 1000 }} // Enables horizontal scroll if the table exceeds 1000px in width
             />
             <Pagination
                 current={currentPage}
@@ -434,18 +447,6 @@ const containerStyle = {
     padding: '20px',
     backgroundColor: '#f9f9f9',
     minHeight: '100vh',
-};
-
-const titleStyle = {
-    textAlign: 'center',
-    marginBottom: '20px',
-};
-
-const searchInputStyle = {
-    marginBottom: '10px',
-    width: '500px',
-    marginLeft: 'auto',
-    display: 'block',
 };
 
 const tableStyle = {

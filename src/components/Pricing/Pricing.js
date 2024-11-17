@@ -66,13 +66,6 @@ const Pricing = () => {
         <ChargesTable />
         {/* You can add more components or content here */}
       </div>
-
-      {/* Section Line */}
-      {/* <Row justify="center" style={{ textAlign: 'center', marginTop: '20px', marginBottom: '30px' }}>
-        <Col span={24}>
-          <hr style={{ width: '1000px', border: '1px solid #edf2f4' }} />
-        </Col>
-      </Row> */}
     </div>
   );
 };

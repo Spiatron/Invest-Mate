@@ -5,6 +5,7 @@ import NameAndEmail from './NameAndEmail';
 import PersonalInfo from './PersonalInfo';
 import BankDetails from './BankDetails';
 import LocationDetails from './LocationDetails';
+import { useNavigate } from 'react-router-dom'; // Import the hook for navigation
 
 const ProfileSettings = () => {
   const [userData, setUserData] = useState({
@@ -21,6 +22,15 @@ const ProfileSettings = () => {
     ifsc: '',
     micrCode: '',
   });
+
+  const navigate = useNavigate(); // Initialize the navigation hook
+
+  useEffect(() => {
+    const role = localStorage.getItem('Role');
+    if (role !== 'user') {
+        navigate('/error403'); // Redirect to unauthorized page if not admin
+    }
+}, [navigate]); // Dependency array ensures the effect only runs on mount
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);

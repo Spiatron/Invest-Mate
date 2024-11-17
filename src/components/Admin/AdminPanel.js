@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Input, Pagination, Typography, Select, Row, Col, message } from 'antd';
+import { Table, Button, Modal, Form, Input, Pagination, Typography, Select, Row, Col, message, Grid, Space } from 'antd';
 import { Country, State, City } from 'country-state-city';
-import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { MdManageAccounts } from "react-icons/md";
+import { useNavigate } from 'react-router-dom'; // Import the hook for navigation
 
 const { Title } = Typography;
 const { Option } = Select;
 
 const AdminPanel = () => {
+    const { xs } = Grid.useBreakpoint(); // Detects if the screen is extra small (mobile)
     const [data, setData] = useState([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
@@ -15,7 +17,7 @@ const AdminPanel = () => {
     const [isRemoveModalVisible, setIsRemoveModalVisible] = useState(false); // Modal for remove action
     const [selectedRecord, setSelectedRecord] = useState(null); // Selected record to remove
 
-
+    const navigate = useNavigate(); // Initialize the navigation hook
     const [form] = Form.useForm(); // Create form instance
     const [removeForm] = Form.useForm(); // Form instance for Remove Moderator
 
@@ -31,63 +33,56 @@ const AdminPanel = () => {
     };
 
     // Function to remove user if username matches
-    // const handleRemoveUser = () => {
-    //     const enteredUsername = removeForm.getFieldValue('username');
-    //     if (enteredUsername === selectedRecord.username) {
-    //         // Remove user logic
-    //         setData(data.filter(item => item.username !== enteredUsername));
-    //         message.success(`${enteredUsername} has been removed.`);
-    //         setIsRemoveModalVisible(false);
-    //         removeForm.resetFields();
-    //     } else {
-    //         message.error('Username does not match!');
-    //     }
-    // };
+    const handleRemoveUser = async () => {
+        const enteredUsername = removeForm.getFieldValue('username');
+        if (enteredUsername === selectedRecord.username) {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    message.error("Token not found");
+                    console.error("Token not found");
+                    return;
+                }
 
-// Function to remove user if username matches
-const handleRemoveUser = async () => {
-    const enteredUsername = removeForm.getFieldValue('username');
-    if (enteredUsername === selectedRecord.username) {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                message.error("Token not found");
-                console.error("Token not found");
-                return;
+                // Send the request to remove the moderator using aadhaar
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/admin/removeModerator`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "token": token,
+                    },
+                    body: JSON.stringify({ aadhaar: selectedRecord.aadhaar }), // Send the aadhaar in the request body
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    message.success(result.message);
+                    // Remove the moderator from the table
+                    setData(data.filter(item => item.aadhaar !== selectedRecord.aadhaar));
+                    setIsRemoveModalVisible(false);
+                    removeForm.resetFields();
+                } else {
+                    message.error(result.message || 'Failed to remove moderator');
+                }
+            } catch (error) {
+                console.error('Error occurred while removing the moderator:', error);
+                message.error('Error removing moderator');
             }
-
-            // Send the request to remove the moderator using aadhaar
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/admin/removeModerator`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    "token": token,
-                },
-                body: JSON.stringify({ aadhaar: selectedRecord.aadhaar }), // Send the aadhaar in the request body
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                message.success(result.message);
-                // Remove the moderator from the table
-                setData(data.filter(item => item.aadhaar !== selectedRecord.aadhaar));
-                setIsRemoveModalVisible(false);
-                removeForm.resetFields();
-            } else {
-                message.error(result.message || 'Failed to remove moderator');
-            }
-        } catch (error) {
-            console.error('Error occurred while removing the moderator:', error);
-            message.error('Error removing moderator');
+        } else {
+            message.error('Username does not match!');
         }
-    } else {
-        message.error('Username does not match!');
-    }
-};
+    };
 
 
     useEffect(() => {
+        // Role-based access control
+        const role = localStorage.getItem('Role');
+        if (role !== 'admin') {
+            navigate('/error403'); // Redirect to unauthorized page if not admin
+            return;
+        }
+
         const fetchModerators = async () => {
             try {
                 const token = localStorage.getItem('token');
@@ -141,12 +136,14 @@ const handleRemoveUser = async () => {
             align: 'center',
             dataIndex: 'email',
             key: 'email',
+            responsive: ['md'], // Display only on medium screens and above
         },
         {
             title: 'Mobile Number',
             align: 'center',
             dataIndex: 'mobileNumber',
             key: 'mobileNumber',
+            responsive: ['lg'],
         },
         {
             title: 'Aadhaar Number',
@@ -159,24 +156,28 @@ const handleRemoveUser = async () => {
             align: 'center',
             dataIndex: 'pan',
             key: 'pan',
+            responsive: ['lg'],
         },
         {
             title: 'Country',
             align: 'center',
             dataIndex: 'country',
             key: 'country',
+            responsive: ['lg'],
         },
         {
             title: 'State',
             align: 'center',
             dataIndex: 'state',
             key: 'state',
+            responsive: ['md'],
         },
         {
             title: 'City',
             align: 'center',
             dataIndex: 'city',
             key: 'city',
+            responsive: ['md'],
         },
         {
             title: 'Actions',
@@ -266,16 +267,22 @@ const handleRemoveUser = async () => {
 
     return (
         <div style={containerStyle}>
-            <div style={titleContainerStyle}>
-                <Title level={2} style={titleStyle}>Moderators Management</Title>
-            </div>
-            <Button type="primary" onClick={showModal} style={addButtonStyle}>Add Moderators</Button>
+            {/* Heading */}
+            <Space style={{ marginBottom: '20px', marginTop: '20px', justifyContent: 'center', width: '100%' }}>
+                <MdManageAccounts size={50} style={{ color: 'black', marginRight: '10px' }} />
+                <Title level={2}style={{ fontSize: xs ? '20px' : '30px',  margin: 0, }}>
+                    Moderators Management
+                </Title>
+            </Space>
+
+            <Button type="primary" onClick={showModal} style={addButtonStyle} block={xs}>Add Moderators</Button>
 
             <Table
                 columns={columns}
                 dataSource={data.slice((currentPage - 1) * pageSize, currentPage * pageSize)}
                 pagination={false}
                 style={tableStyle}
+               // scroll={{ x: 1000 }} // Enables horizontal scroll if the table exceeds 1000px in width
             />
             <Pagination
                 current={currentPage}
@@ -289,8 +296,8 @@ const handleRemoveUser = async () => {
             <Modal
                 visible={isRemoveModalVisible}
                 onCancel={() => {
-                setIsRemoveModalVisible(false);
-                removeForm.resetFields(); // Reset the form when the modal is closed
+                    setIsRemoveModalVisible(false);
+                    removeForm.resetFields(); // Reset the form when the modal is closed
                 }}
                 onOk={handleRemoveUser}
                 okText="Remove"
@@ -447,16 +454,6 @@ const containerStyle = {
     padding: '20px',
     backgroundColor: '#f9f9f9',
     minHeight: '100vh',
-};
-
-const titleContainerStyle = {
-    display: 'flex',
-    justifyContent: 'center',
-    marginBottom: '20px',
-};
-
-const titleStyle = {
-    margin: 0,
 };
 
 const addButtonStyle = {

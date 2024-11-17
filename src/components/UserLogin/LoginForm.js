@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Form, Input, Button, Typography, message } from 'antd';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
-import Cookies from 'js-cookie';
+import Swal from 'sweetalert2';
 
 const { Title, Text } = Typography;
 
@@ -89,10 +89,21 @@ const LoginForm = () => {
             console.log('Response:', result.token);
             console.log(response.ok);
             if (response.ok) {
-                message.success("Welcome! You've logged in successfully.");
-                console.log(result.message);
                 const { token, userData } = result;
+                // Function to capitalize the first letter of a string
+                const capitalizeFirstLetter = (string) => {
+                    return string.charAt(0).toUpperCase() + string.slice(1);
+                };
+                 // SweetAlert2 for success message
+                Swal.fire({
+                    title: `Welcome, ${capitalizeFirstLetter(userData.username)}!`,
+                    text: "You've logged in successfully.",
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false,
+                });
                 navigate("/");  // Redirect to the homepage
+                console.log(result.message);
                 if (token) {
                     localStorage.setItem("token", token);
                     localStorage.setItem("Name", userData.username);
@@ -100,6 +111,7 @@ const LoginForm = () => {
                     localStorage.setItem("UserID", userData.userObjectID);
                     localStorage.setItem("UserZID", userData.userZID);
                     localStorage.setItem("ProfilePic", userData.profilePic);
+                    localStorage.setItem('loginTimestamp', Date.now().toString());
                     console.log(result);
                 } else {
                     message.error("Login failed. Token is missing.");
