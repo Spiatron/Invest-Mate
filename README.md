@@ -82,7 +82,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 For any questions or support, feel free to reach out:
 
 - **GitHub Issues**: [Issues Page](https://github.com/Spiatron/Investa/issues)
-- **Email**: spiatron@example.com
+- **Email**: ahsanhafeez506@gmail.com
 
 ---
 
