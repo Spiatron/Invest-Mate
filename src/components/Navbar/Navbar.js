@@ -233,7 +233,7 @@ const Navbar = () => {
             fontFamily:"Bantayog"
           }}
         >
-          Mangal Keshav
+          Investa
         </span>
       )}
     </Link>
