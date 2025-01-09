@@ -1,5 +1,5 @@
 
-# Investa
+# 📈 Investa
 
 ![GitHub repo](https://img.shields.io/badge/GitHub-Repo-blue?logo=github)
 ![License](https://img.shields.io/badge/License-MIT-green)
@@ -84,6 +84,3 @@ For any questions or support, feel free to reach out:
 - **GitHub Issues**: [Issues Page](https://github.com/Spiatron/Investa/issues)
 - **Email**: ahsanhafeez506@gmail.com
 - **Linkedln**: [Ahsan Hafeez](https://www.linkedin.com/in/ahsan-hafeez-116943278/)
----
-
-We hope you find Investa valuable for your financial planning!
