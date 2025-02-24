@@ -1,5 +1,5 @@
 
-# 📈 Investa
+# 📈 Invest Mate
 
 ![GitHub repo](https://img.shields.io/badge/GitHub-Repo-blue?logo=github)
 ![License](https://img.shields.io/badge/License-MIT-green)
