@@ -233,7 +233,7 @@ const Navbar = () => {
             fontFamily:"Bantayog"
           }}
         >
-          Investa
+          Invest Mate
         </span>
       )}
     </Link>
